@@ -18,7 +18,7 @@ batch_size = 50 # Training : 50, Sampling : 1
 seq_length = 50 # Training : 50, Sampling : 1
 hidden_size = 128   # 히든 레이어의 노드 개수
 learning_rate = 0.002
-num_epochs = 20
+num_epochs = 15
 num_hidden_layers = 2
 grad_clip = 5   # Gradient Clipping에 사용할 임계값
 
