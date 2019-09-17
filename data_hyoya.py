@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from configs import DEFINES
 
-
+'''
 PAD = "<PAD>"
 STD = "<SOS>"
 END = "<END>"
@@ -262,3 +262,4 @@ def main(self):
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
+'''
