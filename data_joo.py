@@ -21,10 +21,17 @@ UNK_INDEX = 3
 
 MARKER = [PAD, STD, END, UNK]
 
-# Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
-def load_data():
 
-    return train_q, train_a, test_q, test_a
+
+# Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
+def load_data(filename):
+
+    with open(filename, 'r', encoding='utf-8') as f:
+        datas = [line.split('\t') for line in f.read().splitlines()]
+        data_train, data_test = train_test_split(datas)
+    return data_train, data_test
+
+    # return train_q, train_a, test_q, test_a
 
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
