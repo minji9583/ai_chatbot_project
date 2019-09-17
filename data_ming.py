@@ -22,10 +22,14 @@ UNK_INDEX = 3
 MARKER = [PAD, STD, END, UNK]
 
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
-def load_data():
-
+def load_data(filename):
+    with open(filename, 'r', encoding='utf-8') as f:
+        datas = [line.split('\t') for line in f.read().splitlines()]
+        data_train, data_test = train_test_split(datas)
+        train_q, test_q, train_a, test_a = train_test_split(data_train, data_test)
+        # print(train_q, test_q, train_a, test_a)
     return train_q, train_a, test_q, test_a
-
+'''
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
     
@@ -262,3 +266,4 @@ def main(self):
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
+'''
