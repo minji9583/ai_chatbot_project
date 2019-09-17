@@ -20,7 +20,7 @@ END_INDEX = 2
 UNK_INDEX = 3
 
 MARKER = [PAD, STD, END, UNK]
-
+'''
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
 def load_data():
 
@@ -262,3 +262,4 @@ def main(self):
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
+'''
