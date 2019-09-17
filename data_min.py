@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from configs import DEFINES
 
-
+# 딥 러닝을 모델을 이용한 챗봇 구현
 PAD = "<PAD>"
 STD = "<SOS>"
 END = "<END>"
