@@ -28,6 +28,7 @@ def load_data(filename):
 
     with open(filename, 'r', encoding='utf-8') as f:
         datas = [line.split('\t') for line in f.read().splitlines()]
+        print(datas)
         data_train, data_test = train_test_split(datas)
     return data_train, data_test
 
