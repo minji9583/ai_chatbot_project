@@ -1,4 +1,4 @@
-from konlpy.tag import Kkma
+﻿from konlpy.tag import Kkma
 import pandas as pd
 import tensorflow as tf
 import enum
@@ -9,6 +9,7 @@ import numpy as np
 from configs import DEFINES
 
 '''
+
 PAD = "<PAD>"
 STD = "<SOS>"
 END = "<END>"
