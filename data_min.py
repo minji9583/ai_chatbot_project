@@ -9,6 +9,9 @@ import numpy as np
 from configs import DEFINES
 
 # 딥 러닝을 모델을 이용한 챗봇 구현
+
+# npm으로 배포하여 개발자가 사용할 수 있도록 챗봇 라이브러리 구현 예정
+
 PAD = "<PAD>"
 STD = "<SOS>"
 END = "<END>"
