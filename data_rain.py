@@ -21,12 +21,22 @@ UNK_INDEX = 3
 
 MARKER = [PAD, STD, END, UNK]
 
+
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
 def load_data(filename):
     with open(filename, 'r', encoding='utf-8') as f:
         data = [line.split('\t') for line in f.read().splitlines()]
-        
+    Q = []
+    A = []
+    labels = []
+    for line in data:
+        tmp = line[0].split(',')
+        Q.append(tmp[0])
+        A.append(tmp[1])
+        labels.append(tmp[2])
+    train_q, test_q, train_a, test_a = train_test_split(Q, A)
     return train_q, train_a, test_q, test_a
+
 '''
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
@@ -265,3 +275,5 @@ if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
 '''
+
+load_data('data_in/ChatBotData.csv')
