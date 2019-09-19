@@ -33,13 +33,23 @@ def load_data(filename):
     print(train_q)
     print(test_q)
     return train_q, train_a, test_q, test_a
-load_data('data_in/ChatBotData.csv')
-'''
+train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
+
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
-    
-    return None
+    remove_texts = ['[', '~', '.', ',', '!', '?', '"', "'", ':', ';', ')', '(', ']']
+    for idx in range(len(data)):
+        for remove_text in remove_texts:
+            if remove_text in data[idx]:
+                cnt = data[idx].count(remove_text)
+                for _ in range(cnt):
+                    data[idx] = data[idx].replace(remove_text, ' ')
+    return data
 
+data = prepro_noise_canceling(train_q)
+for i in data:
+    print(i)
+'''
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
 
