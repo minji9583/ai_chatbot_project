@@ -37,12 +37,17 @@ def load_data(filename):
     train_q, test_q, train_a, test_a = train_test_split(Q, A)
     return train_q, train_a, test_q, test_a
 
-'''
+
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
-    
-    return None
+    check = ["~", ".", ",", "!", "?", '"', "'", ":", ";"]
+    for line in range(len(data)):
+        for i in check:
+            if i in data[line]:
+                data[line] = data[line].replace(i, "")
 
+    return data
+'''
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
 
@@ -276,4 +281,5 @@ if __name__ == '__main__':
     tf.app.run(main)
 '''
 
-load_data('data_in/ChatBotData.csv')
+train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
+prepro_noise_canceling(train_q)
