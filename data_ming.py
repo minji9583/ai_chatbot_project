@@ -43,18 +43,23 @@ def prepro_noise_canceling(data):
             if remove_text in data[idx]:
                 cnt = data[idx].count(remove_text)
                 for _ in range(cnt):
-                    data[idx] = data[idx].replace(remove_text, ' ')
+                    data[idx] = data[idx].replace(remove_text, '')
     return data
 
-data = prepro_noise_canceling(train_q)
-for i in data:
-    print(i)
-'''
+# data = prepro_noise_canceling(train_q)
+# for i in data:
+#     print(i)
+
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
-
-    return None
-
+    data = prepro_noise_canceling(data)
+    dictionary = []
+    for i in data:
+        dictionary += i.split(' ')
+    print(dictionary)
+    return dictionary
+dictionary = tokenizing_data(train_q)
+'''
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
     
