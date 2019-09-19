@@ -26,6 +26,7 @@ MARKER = [PAD, STD, END, UNK]
 def load_data(filename):
     with open(filename, 'r', encoding='utf-8') as f:
         data = [line.split('\t') for line in f.read().splitlines()]
+    data = data[1:10]
     Q = []
     A = []
     labels = []
@@ -47,12 +48,22 @@ def prepro_noise_canceling(data):
                 data[line] = data[line].replace(i, "")
 
     return data
-'''
+
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
+    dictionary = dict()
+    index = 1
+    for i in range(len(data)):
+        data[i] = data[i].split()
+        for word in data[i]:
+            if not dictionary.get(word):
+                dictionary[word] = index
+                index += 1
+    # print(data)
+    # print(dictionary)
 
-    return None
-
+    return dictionary
+'''
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
     
@@ -282,4 +293,5 @@ if __name__ == '__main__':
 '''
 
 train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
-prepro_noise_canceling(train_q)
+prepro_train_q = prepro_noise_canceling(train_q)
+tokenizing_data(prepro_train_q)
