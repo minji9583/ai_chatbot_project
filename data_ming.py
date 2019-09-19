@@ -23,10 +23,16 @@ MARKER = [PAD, STD, END, UNK]
 
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
 def load_data(filename):
+    Q, A = [], []
     with open(filename, 'r', encoding='utf-8') as f:
         for line in f.read().splitlines():
-            print(line)
-    # return train_q, train_a, test_q, test_a
+            line = line.split(',')
+            Q.append(line[0])
+            A.append(line[0])
+    train_q, test_q, train_a, test_a = train_test_split(Q, A)
+    print(train_q)
+    print(test_q)
+    return train_q, train_a, test_q, test_a
 load_data('data_in/ChatBotData.csv')
 '''
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
