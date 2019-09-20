@@ -23,18 +23,7 @@ MARKER = [PAD, STD, END, UNK]
 
 
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
-def load_data(filename):
-    with open(filename, 'r', encoding='utf-8') as f:
-        data = [line.split('\t') for line in f.read().splitlines()]
-    data = data[1:]
-    Q = []
-    A = []
-    labels = []
-    for line in data:
-        tmp = line[0].split(',')
-        Q.append(tmp[0])
-        A.append(tmp[1])
-        labels.append(tmp[2])
+def load_data(Q, A):
     train_q, test_q, train_a, test_a = train_test_split(Q, A)
     return train_q, train_a, test_q, test_a
 
@@ -176,7 +165,7 @@ def dec_target_processing(value, dictionary):
         seq_input_index.append(seq_index)
     # print(np.array(seq_input_index))
     return np.array(seq_input_index)
-'''
+
 # input과 output dictionary를 만드는 함수
 def in_out_dict(input, output, target):
     features = {"input": input, "output": output}
@@ -240,7 +229,7 @@ def eval_input_fn(eval_input_enc, eval_input_dec, eval_target_dec, batch_size):
     return iterator.get_next()
     
 # Req 1-3-1. 단어 사전 파일 vocabularyData.voc를 생성하고 단어와 인덱스 관계를 출력
-def load_voc():
+def load_voc(filename):
     # 사전을 담을 배열 준비한다.
     voc_list = []
     # 사전을 구성한 후 파일로 저장 진행한다.
@@ -250,31 +239,38 @@ def load_voc():
         # 데이터를 가지고 만들어야 한다.
         # 그래서 데이터가 존재 하면 사전을 만들기 위해서
         # 데이터 파일의 존재 유무를 확인한다.
-        
-        data_df = None
+
+        data_df = pd.read_csv(filename)
         # 판다스의 데이터 프레임을 통해
         # 질문과 답에 대한 열을 가져 온다.
-        question, answer = None
+        question, answer = data_df['Q'], data_df['A']
         data = []
+        train_q, train_a, test_q, test_a = load_data(question, answer)
         # 질문과 답변을 extend을
         # 통해서 구조가 없는 배열로 만든다.
         data.extend(question)
         data.extend(answer)
-        
-        # data를 토크나이즈하여 words에 저장한다. 
-        words = None
+
+        # data를 토크나이즈하여 words에 저장한다.
+        words = []
+        for i in data:
+            words.extend(i.split())
         # 중복되는 단어(토큰)를 제거
-        words = None
-        
+        words = list(set(words))
+
         # 데이터 없는 내용중에 MARKER 추가
         words[:0] = MARKER
-        
-        # 사전 파일을 생성 
+
+        # 사전 파일을 생성
         # DEFINES.vocabulary_path에 words안에 저장된 가 단어(토큰)들을 한줄 씩 저장
         with open(DEFINES.vocabulary_path, 'w', encoding='utf-8') as voc_file:
-           
+            for word in words:
+                voc_file.write(word+"\n")
+
     # 사전 파일에서 단어(토큰)을 가져와 voc_list에 저장
     with open(DEFINES.vocabulary_path, 'r', encoding='utf-8') as voc_file:
+        for line in voc_file:
+            voc_list.append(line[:-1])
 
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
     char2idx, idx2char = make_voc(voc_list)
@@ -285,7 +281,7 @@ def load_voc():
 def make_voc(voc_list):
     
     return None
-
+'''
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
     
@@ -301,9 +297,10 @@ if __name__ == '__main__':
     tf.app.run(main)
 '''
 
-train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
-prepro_train_q = prepro_noise_canceling(train_q)
-dictionary = tokenizing_data(prepro_train_q)
-enc_train_q = enc_processing(train_q, dictionary)
-dec_train_a = dec_input_processing(train_a, dictionary)
-dec_target_processing(train_a, dictionary)
+# train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
+# prepro_train_q = prepro_noise_canceling(train_q)
+# dictionary = tokenizing_data(prepro_train_q)
+# enc_train_q = enc_processing(train_q, dictionary)
+# dec_train_a = dec_input_processing(train_a, dictionary)
+# dec_target_processing(train_a, dictionary)
+load_voc('data_in/ChatBotData.csv')
