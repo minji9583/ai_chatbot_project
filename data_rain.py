@@ -245,7 +245,6 @@ def load_voc(filename):
         # 질문과 답에 대한 열을 가져 온다.
         question, answer = data_df['Q'], data_df['A']
         data = []
-        train_q, train_a, test_q, test_a = load_data(question, answer)
         # 질문과 답변을 extend을
         # 통해서 구조가 없는 배열로 만든다.
         data.extend(question)
@@ -275,12 +274,17 @@ def load_voc(filename):
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
     char2idx, idx2char = make_voc(voc_list)
 
-    return None
+    return char2idx, idx2char
 
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
-    
-    return None
+    print(voc_list)
+    char2idx, idx2char = dict(), dict()
+    for i in range(len(voc_list)):
+        word = voc_list[i]
+        char2idx[word] = i+1
+        idx2char[i+1] = word
+    return char2idx, idx2char
 '''
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
