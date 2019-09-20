@@ -53,15 +53,21 @@ def prepro_noise_canceling(data):
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
     data = prepro_noise_canceling(data)
-    dictionary = []
+    dictionary = {}
     for i in data:
-        dictionary += i.split(' ')
-    print(dictionary)
+        texts = i.split(' ')
+        for text in texts:
+            if not dictionary.get(text):
+                dictionary[text] = len(dictionary)+1
+    print('dict', dictionary)
     return dictionary
-dictionary = tokenizing_data(train_q)
-'''
+# dictionary = tokenizing_data(train_q)
+
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
+    # print(value)
+    # print(dictionary)
+
     
     # 인덱스 정보를 저장할 배열 초기화
     seq_input_index = []
@@ -69,33 +75,47 @@ def enc_processing(value, dictionary):
     seq_len = []
     # 노이즈 캔슬
     value = prepro_noise_canceling(value)
-    
+    # print(value)
+
     for seq in value:
         
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index =[]
         
         for word in seq.split():
-            if dictionary.get(word) is not None:
+            if dictionary.get(word) is not seq_index:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
+
+                # print('get', dictionary.get(word))
+                seq_index.extend([dictionary.get(word)])
+
             else:
-                # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다 
-                
+                seq_index.extend(UNK)
+                # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
+        # print(seq_index)
+
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        if len(sequence_index) > DEFINES.max_sequence_length:
-            sequence_index = None
-            
+        if len(seq_index) > DEFINES.max_sequence_length:
+            seq_index = seq_index[:DEFINES.max_sequence_length]
+        # print(DEFINES.max_sequence_length)
+        # print(seq_index)
+
         # seq의 길이를 저장
-        seq_len.append(None)
-        
+        # print(len(seq_index))
+        seq_len.append(len(seq_index))
+
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += [PAD]*(DEFINES.max_sequence_length - len(seq_index))
         
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
-        
-    return None
+        seq_input_index.append(seq_index)
+    #     print('seq', seq)
+    #     print('index', seq_index)
+    # print('len', seq_len)
+    return np.array(seq_input_index)
 
+enc_processing(train_q, tokenizing_data(train_q))
+'''
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
     
