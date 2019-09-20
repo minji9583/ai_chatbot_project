@@ -53,15 +53,21 @@ def prepro_noise_canceling(data):
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
     data = prepro_noise_canceling(data)
-    dictionary = []
+    dictionary = {}
     for i in data:
-        dictionary += i.split(' ')
-    print(dictionary)
+        texts = i.split()
+        for text in texts:
+            if not dictionary.get(text):
+                dictionary[text] = len(dictionary)+1
+    print('dict', dictionary)
     return dictionary
-dictionary = tokenizing_data(train_q)
-'''
+# dictionary = tokenizing_data(train_q)
+
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
+    # print(value)
+    # print(dictionary)
+
     
     # 인덱스 정보를 저장할 배열 초기화
     seq_input_index = []
@@ -69,32 +75,46 @@ def enc_processing(value, dictionary):
     seq_len = []
     # 노이즈 캔슬
     value = prepro_noise_canceling(value)
-    
+    # print(value)
+
     for seq in value:
         
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index =[]
         
         for word in seq.split():
-            if dictionary.get(word) is not None:
+            if dictionary.get(word) is not seq_index:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
+
+                # print('get', dictionary.get(word))
+                seq_index.extend([dictionary.get(word)])
+
             else:
-                # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다 
-                
+                seq_index.extend(UNK)
+                # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
+        # print(seq_index)
+
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        if len(sequence_index) > DEFINES.max_sequence_length:
-            sequence_index = None
-            
+        if len(seq_index) > DEFINES.max_sequence_length:
+            seq_index = seq_index[:DEFINES.max_sequence_length]
+        # print(DEFINES.max_sequence_length)
+        # print(seq_index)
+
         # seq의 길이를 저장
-        seq_len.append(None)
-        
+        # print(len(seq_index))
+        seq_len.append(len(seq_index))
+
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += [PAD]*(DEFINES.max_sequence_length - len(seq_index))
         
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
-        
-    return None
+        seq_input_index.append(seq_index)
+    #     print('seq', seq)
+    #     print('index', seq_index)
+    # print('len', seq_len)
+    return np.array(seq_input_index)
+
+print(enc_processing(train_q, tokenizing_data(train_q)))
 
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
@@ -108,30 +128,35 @@ def dec_input_processing(value, dictionary):
     
     for seq in value:
         # 하나의 seq에 index를 저장할 배열 초기화
-        seq_index =[]
-        
+        # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
+        seq_index =[STD]
+        # print('seq_index', seq_index)
+
         for word in seq.split():
-            # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
-            sequence_index = None
-            if dictionary.get(word) is not None:
+            if dictionary.get(word) is not seq_index:
+                seq_index.extend([dictionary.get(word)])
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
             else:
-                # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다 
-                
+                seq_index.extend([UNK])
+                # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
+        # print(seq_index)
+
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        if len(sequence_index) > DEFINES.max_sequence_length:
-            sequence_index = None
-            
+        if len(seq_index) > DEFINES.max_sequence_length:
+            seq_index = seq_index[:DEFINES.max_sequence_length]
+
         # seq의 길이를 저장
-        seq_len.append(None)
+        seq_len.append(len(seq_index))
         
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
         
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
+        seq_input_index.append(seq_index)
     
-    return None
+    return np.array(seq_input_index)
+
+print('dec', dec_input_processing(train_a, tokenizing_data(train_a)))
 
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리 
 def dec_target_processing(value, dictionary):
@@ -146,23 +171,29 @@ def dec_target_processing(value, dictionary):
     for seq in value:
         
         # 하나의 seq에 index를 저장할 배열 초기화
-        seq_index =[]
-        
         seq_index = [dictionary[word] for word in seq.split()]
+        print('seq_index', seq_index)
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
-        sequence_index = None
+        if len(seq_index) > DEFINES.max_sequence_length:
+            seq_index = seq_index[:DEFINES.max_sequence_length]
+            seq_index += [END]
+        # print('seq_index', seq_index)
             
         # seq의 길이를 저장
-        seq_len.append(None)
+            seq_len.append(len(seq_index))
         
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
-        
+        else:
+            seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
+        print('seq_index', seq_index)
+
+        print('seq_index', seq_index)
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
+        seq_input_index.append(seq_index)
    
-    return None
+    return np.array(seq_input_index)
+print('dec_target_processing', dec_target_processing(train_a, tokenizing_data(train_a)))
 
 # input과 output dictionary를 만드는 함수
 def in_out_dict(input, output, target):
@@ -238,36 +269,45 @@ def load_voc():
         # 그래서 데이터가 존재 하면 사전을 만들기 위해서
         # 데이터 파일의 존재 유무를 확인한다.
         
-        data_df = None
+        data_df = pd.read_csv('data_in/ChatBotData.csv', delimiter=',')
+        # for i in data_df:
+        #     print(i)
+
         # 판다스의 데이터 프레임을 통해
         # 질문과 답에 대한 열을 가져 온다.
-        question, answer = None
+        question, answer = data_df['Q'], data_df['A']
+        print(question, answer)
         data = []
         # 질문과 답변을 extend을
         # 통해서 구조가 없는 배열로 만든다.
         data.extend(question)
         data.extend(answer)
-        
+
         # data를 토크나이즈하여 words에 저장한다. 
-        words = None
+        words = tokenizing_data(data)
         # 중복되는 단어(토큰)를 제거
-        words = None
-        
+        words = list(set(words))
+        print(words)
         # 데이터 없는 내용중에 MARKER 추가
         words[:0] = MARKER
-        
+        print(words)
         # 사전 파일을 생성 
         # DEFINES.vocabulary_path에 words안에 저장된 가 단어(토큰)들을 한줄 씩 저장
         with open(DEFINES.vocabulary_path, 'w', encoding='utf-8') as voc_file:
-           
+            for word in words:
+                voc_file.write(word+'\n')
+
+        '''
     # 사전 파일에서 단어(토큰)을 가져와 voc_list에 저장
     with open(DEFINES.vocabulary_path, 'r', encoding='utf-8') as voc_file:
 
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
-    char2idx, idx2char = make_voc(voc_list)
+    # char2idx, idx2char = make_voc(voc_list)
 
     return None
-
+'''
+load_voc()
+'''
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
     
