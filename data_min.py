@@ -42,8 +42,14 @@ def load_data(filename):
 
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
+    noise = ['[', '~', '.', ',', '!', '?', '\\', '\"', "\'", ':', ';', ')', '(', ']']
 
-    return None
+    for x in range(len(data)):
+        for y in range(len(data[x])):
+            if data[x][y] in noise:
+                data[x] = data[x].replace(data[x][y], '')
+
+    return data
 
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
