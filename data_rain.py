@@ -53,6 +53,7 @@ def prepro_noise_canceling(data):
 def tokenizing_data(data):
     dictionary = dict()
     index = 1
+    data = data[:]
     for i in range(len(data)):
         data[i] = data[i].split()
         for word in data[i]:
@@ -74,18 +75,17 @@ def enc_processing(value, dictionary):
     # 노이즈 캔슬
     value = prepro_noise_canceling(value)
 
-    print(value)
     for seq in value:
-        
+
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = []
         for word in seq.split():
             if dictionary.get(word):
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
-                seq_index.append(dictionary.get(word))
+                seq_index.extend([dictionary.get(word)])
             else:
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다 
-                seq_index.append(UNK)
+                seq_index.extend([UNK])
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
             seq_index = seq_index[:DEFINES.max_sequence_length]
@@ -97,45 +97,47 @@ def enc_processing(value, dictionary):
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
-    return seq_input_index
-'''
+    # print(np.array(seq_input_index))
+    return np.array(seq_input_index)
+
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
-    
+
     # 인덱스 정보를 저장할 배열 초기화
     seq_input_index = []
     # 문장의 길이를 저장할 배열 초기화
     seq_len = []
     # 노이즈 캔슬
     value = prepro_noise_canceling(value)
-    
+
     for seq in value:
         # 하나의 seq에 index를 저장할 배열 초기화
-        seq_index =[]
-        
+        seq_index = []
+        # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
+        seq_index.extend([STD])
+
         for word in seq.split():
-            # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
-            sequence_index = None
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
+                seq_index.extend([dictionary.get(word)])
             else:
-                # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다 
-                
+                # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
+                seq_index.extend([UNK])
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        if len(sequence_index) > DEFINES.max_sequence_length:
-            sequence_index = None
+        if len(seq_index) > DEFINES.max_sequence_length:
+            seq_index = seq_index[:DEFINES.max_sequence_length]
             
         # seq의 길이를 저장
-        seq_len.append(None)
+        seq_len.append(seq_index)
         
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
         
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
-    
-    return None
-
+        seq_input_index.append(seq_index)
+    # print(np.array(seq_input_index))
+    return np.array(seq_input_index)
+'''
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리 
 def dec_target_processing(value, dictionary):
     
@@ -294,4 +296,5 @@ if __name__ == '__main__':
 train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
 prepro_train_q = prepro_noise_canceling(train_q)
 dictionary = tokenizing_data(prepro_train_q)
-enc_processing(train_a, dictionary)
+enc_train_q = enc_processing(train_q, dictionary)
+dec_train_a = dec_input_processing(train_a, dictionary)
