@@ -26,21 +26,37 @@ MARKER = [PAD, STD, END, UNK]
 
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
 def load_data(filename):
+    Q = []
+    A = []
+
     with open(filename, 'r', encoding='utf-8') as f:
         datas = [line.split(',') for line in f.read().splitlines()]
+
+    for i in range(len(datas)):
+        Q.append(datas[i][0])
+        A.append(datas[i][1])
+
+    train_q, train_a, test_q, test_a = train_test_split(Q, A)
 
     return train_q, train_a, test_q, test_a
 
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
-    
-    return None
+    noise = ['[', '~', '.', ',', '!', '?', '\\', '\"', "\'", ':', ';', ')', '(', ']']
+
+    for x in range(len(data)):
+        for y in range(len(data[x])):
+            if data[x][y] in noise:
+                data[x] = data[x].replace(data[x][y], '')
+
+    return data
 
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
 
     return None
 
+"""
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
     
@@ -267,3 +283,4 @@ def main(self):
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
+"""
