@@ -274,7 +274,7 @@ def load_voc(filename):
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
     char2idx, idx2char = make_voc(voc_list)
 
-    return char2idx, idx2char
+    return char2idx, idx2char, len(voc_list)
 
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
@@ -285,13 +285,15 @@ def make_voc(voc_list):
         char2idx[word] = i+1
         idx2char[i+1] = word
     return char2idx, idx2char
-'''
+
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
+    result = ""
+    for i in value:
+        result += dictionary.get(i)
+    return result, True
     
-    return None
-    
-    
+'''
 def main(self):
     char2idx, idx2char, voc_length = load_voc()
 
@@ -307,4 +309,5 @@ if __name__ == '__main__':
 # enc_train_q = enc_processing(train_q, dictionary)
 # dec_train_a = dec_input_processing(train_a, dictionary)
 # dec_target_processing(train_a, dictionary)
-load_voc('data_in/ChatBotData.csv')
+char2idx, idx2char, len_voc_list = load_voc('data_in/ChatBotData.csv')
+print(pred_next_string([4, 62, 473, 4423, 2354, 2, 46], idx2char))
