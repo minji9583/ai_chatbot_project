@@ -1,7 +1,7 @@
 import sys
 import pickle
 from PyQt5.QtWidgets import \
-    QApplication, QWidget, QDesktopWidget, QGridLayout, QLabel, QPushButton, QFileDialog, QLineEdit
+     QApplication, QWidget, QDesktopWidget, QGridLayout, QLabel, QPushButton, QFileDialog, QLineEdit
 
 class MyApp(QWidget):
 
