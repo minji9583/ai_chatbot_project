@@ -4,29 +4,65 @@ import pickle
 from PyQt5.QtWidgets import \
     QApplication, QWidget, QDesktopWidget, QGridLayout, QLabel, QPushButton, \
     QFileDialog, QLineEdit, QMessageBox, QBoxLayout, QGroupBox
+from PyQt5 import QtWidgets, QtCore
+
 
 class MyApp(QWidget):
+    """메인 윈도우"""
+    css = """
+        QWidget {
+            color: #FFF;
+            background: #4D342A;
+        }
+        QWidget#windowTitle {
+            color: #FFFFFF;
+            background: #FFFFFF;
+        }
+        QWidget#windowTitle QLabel {
+            color: #000000;
+            background: #FFFFFF;
+        }
+        QGroupBox  {
+            border: 1px solid gray;
+            margin: 10px;
+            font-size: 14px;
+            border-radius: 15px;
+        }
+        
+    """
+    
 
     def __init__(self):
         super().__init__()
         self.userTestCnt = 0;
         self.userTestres = [];
-        self.setWindowTitle('학습장치')
         self.resize(600, 120)
-
-        self.container = QBoxLayout(QBoxLayout.TopToBottom,self)
+        
+        self.container = QtWidgets.QVBoxLayout(self)
+        self.container.setContentsMargins(1, 1, 1, 1)
+    
         self.setLayout(self.container)
+
         self.initUI()
 
 
-    def initUI(self):
+    def initUI(self): 
         self.step1 = QGroupBox("step1")
+            
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint) #프레임을 없애고
+        self.setStyleSheet(self.css) # css를 적용함
+        titlebar_widget = QtWidgets.QWidget()
+        titlebar_widget.setObjectName("windowTitle")
+        title_label = QtWidgets.QLabel("학습 장치")
+        title_hbox = QtWidgets.QHBoxLayout(titlebar_widget)
+        title_hbox.addWidget(title_label)
+        
+        self.container.addWidget(titlebar_widget)
         self.container.addWidget(self.step1)
+        
         self.grid = QGridLayout()
-        self.step1.setLayout(self.grid)
-
         self.sFile = QLabel("선택한 파일이없습니다.")
-
+        
         self.selectFileBtn = QPushButton("파일 선택", self)
         self.selectFileBtn.clicked.connect(self.showFileDialog)
         self.startBtn = QPushButton("학습 시작", self)
@@ -36,9 +72,9 @@ class MyApp(QWidget):
         self.grid.addWidget(self.selectFileLb, 0, 0)
         self.grid.addWidget(self.sFile, 0, 1)
         self.grid.addWidget(self.selectFileBtn, 0,2)
-
         self.grid.addWidget(self.startBtn,1,1)
-
+        
+        self.step1.setLayout(self.grid)
 
         fname = QFileDialog.getOpenFileName(self)
         print("select : " + fname[0])
