@@ -2,7 +2,8 @@ import sys
 import matplotlib.pyplot as plt
 import pickle
 from PyQt5.QtWidgets import \
-    QApplication, QWidget, QDesktopWidget, QGridLayout, QLabel, QPushButton, QFileDialog, QLineEdit, QMessageBox
+    QApplication, QWidget, QDesktopWidget, QGridLayout, QLabel, QPushButton, \
+    QFileDialog, QLineEdit, QMessageBox, QBoxLayout, QGroupBox
 
 class MyApp(QWidget):
 
@@ -10,11 +11,19 @@ class MyApp(QWidget):
         super().__init__()
         self.userTestCnt = 0;
         self.userTestres = [];
+        self.setWindowTitle('학습장치')
+        self.resize(600, 120)
+
+        self.container = QBoxLayout(QBoxLayout.TopToBottom,self)
+        self.setLayout(self.container)
         self.initUI()
 
+
     def initUI(self):
+        self.step1 = QGroupBox("step1")
+        self.container.addWidget(self.step1)
         self.grid = QGridLayout()
-        self.setLayout(self.grid)
+        self.step1.setLayout(self.grid)
 
         self.sFile = QLabel("선택한 파일이없습니다.")
 
@@ -30,14 +39,12 @@ class MyApp(QWidget):
 
         self.grid.addWidget(self.startBtn,1,1)
 
-        self.setWindowTitle('학습장치')
-        self.resize(600, 120)
-        self.center()
-        self.
 
         fname = QFileDialog.getOpenFileName(self)
         print("select : " + fname[0])
         self.sFile.setText(fname[0])
+
+        self.center()
         self.show()
 
     def start(self):
@@ -54,16 +61,16 @@ class MyApp(QWidget):
 
 
     def setMoreUI(self):
-        # 창을 늘린다
-        self.resize(600, 500)
-        self.center()
+        # 이전 내용을 모두 지우고 프로그래스바를 띄운다
+        self.step1.deleteLater();
 
-        self.selectFileLb.setText("선택된 데이터")
-        self.startBtn.deleteLater()
-        self.selectFileBtn.deleteLater()
 
         #여기에 프로그래스바가 생겨야하고... 끝나면 더 늘리기
         #프로그래스바는 나중에 했다치고, 프로그레스바가 끝나면 아래 버튼 이벤트가 실행되게
+        self.step2 = QGroupBox("step2")
+        self.container.addWidget(self.step2)
+        self.grid = QGridLayout()
+        self.step2.setLayout(self.grid)
 
         self.tmpbtn = QPushButton("프로그레스바 컴플릿!", self);
         self.tmpbtn.clicked.connect(self.setFianlUI)
