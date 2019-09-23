@@ -70,6 +70,7 @@ class MyApp(QWidget):
         self.step2 = QGroupBox("step2")
         self.container.addWidget(self.step2)
         self.grid = QGridLayout()
+
         self.step2.setLayout(self.grid)
 
         self.tmpbtn = QPushButton("프로그레스바 컴플릿!", self);
@@ -80,9 +81,8 @@ class MyApp(QWidget):
         self.resize(600, 800)
         self.center()
 
+    
 
-
-######################################################
     def showFileDialog(self):
         fname = QFileDialog.getOpenFileName(self)
         print("select : " + fname[0])
