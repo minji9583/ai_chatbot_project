@@ -172,7 +172,7 @@ def dec_target_processing(value, dictionary):
         
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = [dictionary[word] for word in seq.split()]
-        print('seq_index', seq_index)
+        # print('seq_index', seq_index)
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
         if len(seq_index) > DEFINES.max_sequence_length:
@@ -186,9 +186,9 @@ def dec_target_processing(value, dictionary):
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
         else:
             seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
-        print('seq_index', seq_index)
-
-        print('seq_index', seq_index)
+        # print('seq_index', seq_index)
+        #
+        # print('seq_index', seq_index)
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
    
@@ -270,14 +270,14 @@ def load_voc():
         # 데이터 파일의 존재 유무를 확인한다.
         
         data_df = pd.read_csv(DEFINES.data_path)
-        for i in data_df:
-            print('data_df', i)
-        print(data_df)
+        # for i in data_df:
+        #     print('data_df', i)
+        # print(data_df)
 
         # 판다스의 데이터 프레임을 통해
         # 질문과 답에 대한 열을 가져 온다.
         question, answer = data_df['Q'], data_df['A']
-        print(question, answer)
+        # print(question, answer)
         data = []
         # 질문과 답변을 extend을
         # 통해서 구조가 없는 배열로 만든다.
@@ -288,10 +288,10 @@ def load_voc():
         words = tokenizing_data(data)
         # 중복되는 단어(토큰)를 제거
         words = list(set(words))
-        print(words)
+        # print(words)
         # 데이터 없는 내용중에 MARKER 추가
         words[:0] = MARKER
-        print(words)
+        # print(words)
         # 사전 파일을 생성 
         # DEFINES.vocabulary_path에 words안에 저장된 가 단어(토큰)들을 한줄 씩 저장
         with open(DEFINES.vocabulary_path, 'w', encoding='utf-8') as voc_file:
@@ -302,14 +302,14 @@ def load_voc():
     # 사전 파일에서 단어(토큰)을 가져와 voc_list에 저장
     with open(DEFINES.vocabulary_path, 'r', encoding='utf-8') as voc_file:
         for line in voc_file.readlines():
-            print('line', line)
+            # print('line', line)
             voc_list.append(line.split('\n')[0])
-    print(voc_list)
+    # print(voc_list)
 
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
     char2idx, idx2char = make_voc(voc_list)
 
-    return
+    return char2idx, idx2char, len(char2idx)
 
 
 
@@ -325,19 +325,22 @@ def make_voc(voc_list):
     print('idx2char', idx2char)
     return char2idx, idx2char
 
-load_voc()
-'''                 
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
+    print(value)
+    answer = ''
+    for i in value:
+        if dictionary.get(i):
+            print(dictionary.get(i))
+            answer += dictionary.get(i)
+    return answer, True
     
-    return None
-    
-    
-def main(self)
+
+def main(self):
     char2idx, idx2char, voc_length = load_voc()
+    print(pred_next_string([5, 6, 7, 8], idx2char))
 
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
-'''
