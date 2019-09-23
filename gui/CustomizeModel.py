@@ -40,8 +40,8 @@ class MyApp(QWidget):
         super().__init__()
         self.userTestCnt = 0;
         self.userTestres = [];
-        self.resize(600, 120)
-        
+        self.resize(600, 150)
+        self.setFixedSize(600, 150)
         self.container = QtWidgets.QVBoxLayout(self)
         self.container.setContentsMargins(1, 1, 1, 1)
     
@@ -114,6 +114,7 @@ class MyApp(QWidget):
 
     def setFianlUI(self):
         self.resize(600, 800)
+        self.setFixedSize(600, 800)
         self.center()
 
 
