@@ -9,7 +9,7 @@ from PyQt5 import QtWidgets, QtCore
 
 class MyApp(QWidget):
     """메인 윈도우"""
-    qss = """
+    css = """
         QWidget {
             color: #FFF;
             background: #4D342A;
@@ -22,6 +22,13 @@ class MyApp(QWidget):
             color: #000000;
             background: #FFFFFF;
         }
+        QGroupBox  {
+            border: 1px solid gray;
+            margin: 10px;
+            font-size: 14px;
+            border-radius: 15px;
+        }
+        
     """
     
 
@@ -30,26 +37,30 @@ class MyApp(QWidget):
         self.userTestCnt = 0;
         self.userTestres = [];
         self.resize(600, 120)
-
-        self.container = QGridLayout()
+        
+        self.container = QtWidgets.QVBoxLayout(self)
+        self.container.setContentsMargins(1, 1, 1, 1)
+    
         self.setLayout(self.container)
+
         self.initUI()
 
 
-    def initUI(self):
+    def initUI(self): 
         self.step1 = QGroupBox("step1")
-        
+            
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint) #프레임을 없애고
-        self.setStyleSheet(self.qss) # css를 적용함
+        self.setStyleSheet(self.css) # css를 적용함
         titlebar_widget = QtWidgets.QWidget()
         titlebar_widget.setObjectName("windowTitle")
         title_label = QtWidgets.QLabel("학습 장치")
         title_hbox = QtWidgets.QHBoxLayout(titlebar_widget)
         title_hbox.addWidget(title_label)
-        self.container.addWidget(titlebar_widget,0,0)
-        self.container.addWidget(self.step1,1,0)
+        
+        self.container.addWidget(titlebar_widget)
+        self.container.addWidget(self.step1)
+        
         self.grid = QGridLayout()
-
         self.sFile = QLabel("선택한 파일이없습니다.")
         
         self.selectFileBtn = QPushButton("파일 선택", self)
