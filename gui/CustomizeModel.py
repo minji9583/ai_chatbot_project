@@ -3,9 +3,25 @@ import matplotlib.pyplot as plt
 import pickle
 from PyQt5.QtWidgets import \
     QApplication, QWidget, QDesktopWidget, QGridLayout, QLabel, QPushButton, QFileDialog, QLineEdit, QMessageBox
-
+from PyQt5 import QtWidgets, QtCore
 
 class MyApp(QWidget):
+    """메인 윈도우"""
+    qss = """
+        QWidget {
+            color: #FFF;
+            background: #4D342A;
+        }
+        QWidget#windowTitle {
+            color: #FFFFFF;
+            background: #4D342A;
+        }
+        QWidget#windowTitle QLabel {
+            color: #FFFFFF;
+            background: #4D342A;
+        }
+    """
+    
 
     def __init__(self):
         super().__init__()
@@ -14,28 +30,39 @@ class MyApp(QWidget):
         self.initUI()
 
     def initUI(self):
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint) #프레임을 없애고
+        self.setStyleSheet(self.qss) # css를 적용함
         self.grid = QGridLayout()
-        self.setLayout(self.grid)
 
+        titlebar_widget = QtWidgets.QWidget()
+        titlebar_widget.setObjectName("windowTitle")
+        title_label = QtWidgets.QLabel("학습 장치")
+        
+        title_hbox = QtWidgets.QHBoxLayout(titlebar_widget)
+        title_hbox.addWidget(title_label)
+
+        self.grid.addWidget(titlebar_widget, 0,0)
         self.sFile = QLabel("선택한 파일이없습니다.")
-
         self.selectFileBtn = QPushButton("파일 선택", self)
         self.selectFileBtn.clicked.connect(self.showFileDialog)
         self.startBtn = QPushButton("학습 시작", self)
         self.startBtn.clicked.connect(self.start)
         self.selectFileLb = QLabel('학습 데이터 선택 : ');
 
-        self.grid.addWidget(self.selectFileLb, 0, 0)
-        self.grid.addWidget(self.sFile, 0, 1)
-        self.grid.addWidget(self.selectFileBtn, 0,2)
-
-        self.grid.addWidget(self.startBtn,1,1)
-
-        self.setWindowTitle('학습장치')
-        self.resize(600, 120)
+        self.grid.addWidget(self.selectFileLb, 1, 0)
+        self.grid.addWidget(self.sFile, 1, 1)
+        self.grid.addWidget(self.selectFileBtn, 1,2)
+        self.grid.addWidget(self.startBtn,2,1)
+        
+       
+        
+        self.setLayout(self.grid)
+    
+        
+        self.resize(600, 150)
         self.center()
         
-
+        
         fname = QFileDialog.getOpenFileName(self)
         print("select : " + fname[0])
         self.sFile.setText(fname[0])
@@ -60,6 +87,7 @@ class MyApp(QWidget):
         self.center()
 
         self.selectFileLb.setText("선택된 데이터")
+        self.titlebar_widget.deleteLater()
         self.startBtn.deleteLater()
         self.selectFileBtn.deleteLater()
 
