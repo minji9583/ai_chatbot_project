@@ -35,11 +35,17 @@ pip install pyqt5-tools
 
 
 
+
+
 > 그래프를 그릴 준비하기
 
-먼저 matplotlib를 다운받자 [홈페이지](https://sourceforge.net/projects/matplotlib/files/matplotlib/)
-여기서 윈도우라면 whl 파일로 다운받으면 된다.
- 나는 ```matplotlib-1.5.0-cp35-none-win_amd64.whl```를 다운받았다.
+콘솔에 아래 명령어를 입력해 패키지를 설치하자
+
+```
+pip install matplotlib
+```
+
+
 
 
 
