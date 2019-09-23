@@ -46,10 +46,10 @@ def load_data(filename):
 def prepro_noise_canceling(data):
     noise = ['[', '~', '.', ',', '!', '?', '\\', '\"', "\'", ':', ';', ')', '(', ']']
 
-    for j in range(len(data)):
-        for k in range(len(data[j])):
-            if data[j][k] in noise:
-                data[j] = data[j].replace(data[j][k], '')
+    for sentence in range(len(data)):
+        for j in noise:
+            if j in data[sentence]:
+                data[sentence] = data[sentence].replace(j, '')
 
     return data
 
@@ -68,8 +68,6 @@ def tokenizing_data(data):
 
     return word_indices
 
-
-"""
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
 
@@ -88,11 +86,10 @@ def enc_processing(value, dictionary):
         for word in seq.split():
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
-
-                pass
+                seq_index.extend(dictionary[word])
             else:
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
-                dictionary[word] = UNK
+                seq_index.extend(UNK)
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(sequence_index) > DEFINES.max_sequence_length:
@@ -109,7 +106,7 @@ def enc_processing(value, dictionary):
 
     return None
 
-
+"""
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
 
