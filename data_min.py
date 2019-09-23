@@ -24,20 +24,12 @@ UNK_INDEX = 3
 
 MARKER = [PAD, STD, END, UNK]
 
-
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
 def load_data(filename):
-    Q = []
-    A = []
+    data_df = pd.read_csv(DEFINES.data_path, header = 0)
+    question, answer = list(data_df['Q']), list(data_df['A'])
 
-    with open(filename, 'r', encoding='utf-8') as f:
-        datas = [line.split(',') for line in f.read().splitlines()]
-
-    for i in range(len(datas)):
-        Q.append(datas[i][0])
-        A.append(datas[i][1])
-
-    train_q, train_a, test_q, test_a = train_test_split(Q, A)
+    train_q, train_a, test_q, test_a = train_test_split(question, answer, test_size=0.33, random_state=42)
 
     return train_q, train_a, test_q, test_a
 
@@ -67,7 +59,7 @@ def tokenizing_data(data):
                 word_indices[idx] = len(word_indices) + 1
 
     return word_indices
-
+"""
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
 
@@ -99,14 +91,14 @@ def enc_processing(value, dictionary):
         seq_len.append(None)
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += PAD
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(None)
 
     return None
 
-"""
+
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
 
