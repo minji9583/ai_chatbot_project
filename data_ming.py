@@ -28,7 +28,7 @@ def load_data(filename):
         for line in f.read().splitlines():
             line = line.split(',')
             Q.append(line[0])
-            A.append(line[0])
+            A.append(line[1])
     train_q, test_q, train_a, test_a = train_test_split(Q, A)
     print(train_q)
     print(test_q)
@@ -118,7 +118,7 @@ print(enc_processing(train_q, tokenizing_data(train_q)))
 
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
-    
+    print('dict', dictionary)
     # 인덱스 정보를 저장할 배열 초기화
     seq_input_index = []
     # 문장의 길이를 저장할 배열 초기화
@@ -131,11 +131,12 @@ def dec_input_processing(value, dictionary):
         # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
         seq_index =[STD]
         # print('seq_index', seq_index)
-
         for word in seq.split():
+            # print('get', dictionary.get(word))
             if dictionary.get(word) is not seq_index:
                 seq_index.extend([dictionary.get(word)])
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
+
             else:
                 seq_index.extend([UNK])
                 # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
@@ -160,6 +161,8 @@ print('dec', dec_input_processing(train_a, tokenizing_data(train_a)))
 
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리 
 def dec_target_processing(value, dictionary):
+    print('train_target_dec value', value)
+    print('train_target_dec dict', dictionary)
     
     # 인덱스 정보를 저장할 배열 초기화
     seq_input_index = []
@@ -169,29 +172,31 @@ def dec_target_processing(value, dictionary):
     value = prepro_noise_canceling(value)
     
     for seq in value:
-        
+        print('dec_target_processing seq', seq)
         # 하나의 seq에 index를 저장할 배열 초기화
-        seq_index = [dictionary[word] for word in seq.split()]
+        # seq_index = [dictionary[word] for word in seq.split()]
+        seq_index = [word for word in seq.split()]
+        print('dec_target_processing seq_index', seq_index)
         # print('seq_index', seq_index)
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
         if len(seq_index) > DEFINES.max_sequence_length:
             seq_index = seq_index[:DEFINES.max_sequence_length]
-            seq_index += [END]
         # print('seq_index', seq_index)
-            
+
         # seq의 길이를 저장
             seq_len.append(len(seq_index))
-        
+
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        else:
             seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
-        # print('seq_index', seq_index)
+        else:
+        # print('seq_index', seq_index)`
         #
         # print('seq_index', seq_index)
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
+        seq_index[DEFINES.max_sequence_length-1] = END
         seq_input_index.append(seq_index)
-   
+
     return np.array(seq_input_index)
 print('dec_target_processing', dec_target_processing(train_a, tokenizing_data(train_a)))
 
