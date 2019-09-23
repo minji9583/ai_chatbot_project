@@ -26,7 +26,7 @@ MARKER = [PAD, STD, END, UNK]
 
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
 def load_data(filename):
-    data_df = pd.read_csv(DEFINES.data_path, header = 0)
+    data_df = pd.read_csv('data_in\ChatBotData.csv', header = 0)
     question, answer = list(data_df['Q']), list(data_df['A'])
 
     train_q, train_a, test_q, test_a = train_test_split(question, answer, test_size=0.33, random_state=42)
