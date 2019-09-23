@@ -44,10 +44,10 @@ def load_data(filename):
 def prepro_noise_canceling(data):
     noise = ['[', '~', '.', ',', '!', '?', '\\', '\"', "\'", ':', ';', ')', '(', ']']
 
-    for x in range(len(data)):
-        for y in range(len(data[x])):
-            if data[x][y] in noise:
-                data[x] = data[x].replace(data[x][y], '')
+    for j in range(len(data)):
+        for k in range(len(data[j])):
+            if data[j][k] in noise:
+                data[j] = data[j].replace(data[j][k], '')
 
     return data
 
@@ -75,8 +75,11 @@ def enc_processing(value, dictionary):
         for word in seq.split():
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
+
+                pass
             else:
-                # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다 
+                # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
+                dictionary[word] = UNK
                 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(sequence_index) > DEFINES.max_sequence_length:
@@ -92,6 +95,7 @@ def enc_processing(value, dictionary):
         seq_input_index.append(None)
         
     return None
+
 
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
