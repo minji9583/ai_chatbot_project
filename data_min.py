@@ -33,6 +33,12 @@ def load_data(filename):
 
     return train_q, train_a, test_q, test_a
 
+data_df = pd.read_csv('data_in\ChatBotData.csv', header = 0)[:5]
+question, answer = list(data_df['Q']), list(data_df['A'])
+train_q, train_a, test_q, test_a = train_test_split(question, answer, test_size=0.33, random_state=42)
+
+data = train_q
+print(data)
 
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
@@ -59,7 +65,7 @@ def tokenizing_data(data):
                 word_indices[idx] = len(word_indices) + 1
 
     return word_indices
-"""
+
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
 
@@ -81,24 +87,24 @@ def enc_processing(value, dictionary):
                 seq_index.extend(dictionary[word])
             else:
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
-                seq_index.extend(UNK)
+                seq_index.extend(dictionary[UNK])
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        if len(sequence_index) > DEFINES.max_sequence_length:
-            sequence_index = None
+        if len(seq_index) > DEFINES.max_sequence_length:
+            seq_index = seq_index[:DEFINES.max_sequence_length]
 
         # seq의 길이를 저장
-        seq_len.append(None)
+        seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += PAD
+        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [dictionary[PAD]]
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
+        seq_input_index.append(seq_index)
 
-    return None
+    return np.asarray(seq_input_index)
 
-
+"""
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
 
