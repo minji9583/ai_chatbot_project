@@ -307,17 +307,26 @@ def load_voc():
     print(voc_list)
 
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
-    # char2idx, idx2char = make_voc(voc_list)
+    char2idx, idx2char = make_voc(voc_list)
 
     return
 
-load_voc()
-'''
+
+
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
-    
-    return None
+    char2idx = {}
+    idx2char = {}
+    for voca in voc_list:
+        if not char2idx.get(voca):
+            char2idx[voca] = len(char2idx)+1
+            idx2char[len(char2idx)] = voca
+    print('char2idx', char2idx)
+    print('idx2char', idx2char)
+    return char2idx, idx2char
 
+load_voc()
+'''                 
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
     
