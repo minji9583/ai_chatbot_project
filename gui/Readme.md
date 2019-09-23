@@ -53,6 +53,14 @@ pip install matplotlib
 
 #### 시작하기
 
+##### init
+
+스타일에 대한 [참고자료](https://soma0sd.tistory.com/95?category=872646)
+
+
+
+
+
 ##### initUI
 
 gui를 생성하는 부분입니다.
