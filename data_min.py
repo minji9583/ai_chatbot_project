@@ -104,7 +104,7 @@ def enc_processing(value, dictionary):
 
     return np.asarray(seq_input_index)
 
-"""
+
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
 
@@ -121,27 +121,30 @@ def dec_input_processing(value, dictionary):
 
         for word in seq.split():
             # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
-            sequence_index = None
+            seq_index = dictionary[STD]
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
+                seq_index.extend(dictionary[word])
             else:
-                # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다 
+                # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
+                seq_index.extend(dictionary[UNK])
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        if len(sequence_index) > DEFINES.max_sequence_length:
-            sequence_index = None
+        if len(seq_index) > DEFINES.max_sequence_length:
+            seq_index = seq_index[:DEFINES.max_sequence_length]
 
         # seq의 길이를 저장
-        seq_len.append(None)
+        seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [dictionary[PAD]]
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
+        seq_input_index.append(seq_index)
 
-    return None
+    return np.asarray(seq_input_index)
 
+"""
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리 
 def dec_target_processing(value, dictionary):
 
