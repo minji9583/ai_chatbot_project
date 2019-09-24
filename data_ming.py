@@ -133,7 +133,7 @@ def dec_input_processing(value, dictionary):
         # print('seq_index', seq_index)
         for word in seq.split():
             # print('get', dictionary.get(word))
-            if dictionary.get(word) is not seq_index:
+            if dictionary.get(word) is not None:
                 seq_index.extend([dictionary.get(word)])
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
 
