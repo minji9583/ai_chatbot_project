@@ -144,7 +144,7 @@ def dec_input_processing(value, dictionary):
 
     return np.asarray(seq_input_index)
 
-"""
+
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리 
 def dec_target_processing(value, dictionary):
 
@@ -162,19 +162,21 @@ def dec_target_processing(value, dictionary):
 
         seq_index = [dictionary[word] for word in seq.split()]
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
-        sequence_index = None
+        if len(seq_index) > DEFINES.max_sequence_length:
+            # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
+            seq_index = seq_index[:DEFINES.max_sequence_length-1] + [dictionary[END]]
+        seq_index += [dictionary[END]]
 
         # seq의 길이를 저장
-        seq_len.append(None)
+        seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [dictionary[PAD]]
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
+        seq_input_index.append(seq_index)
 
-    return None
+    return np.asarray(seq_input_index)
 
 # input과 output dictionary를 만드는 함수
 def in_out_dict(input, output, target):
@@ -238,6 +240,7 @@ def eval_input_fn(eval_input_enc, eval_input_dec, eval_target_dec, batch_size):
     # 텐서 개체를 넘겨준다.
     return iterator.get_next()
 
+"""
 # Req 1-3-1. 단어 사전 파일 vocabularyData.voc를 생성하고 단어와 인덱스 관계를 출력
 def load_voc():
     # 사전을 담을 배열 준비한다.
