@@ -240,7 +240,7 @@ def eval_input_fn(eval_input_enc, eval_input_dec, eval_target_dec, batch_size):
     # 텐서 개체를 넘겨준다.
     return iterator.get_next()
 
-"""
+
 # Req 1-3-1. 단어 사전 파일 vocabularyData.voc를 생성하고 단어와 인덱스 관계를 출력
 def load_voc():
     # 사전을 담을 배열 준비한다.
@@ -252,11 +252,11 @@ def load_voc():
         # 데이터를 가지고 만들어야 한다.
         # 그래서 데이터가 존재 하면 사전을 만들기 위해서
         # 데이터 파일의 존재 유무를 확인한다.
-
-        data_df = None
-        # 판다스의 데이터 프레임을 통해
-        # 질문과 답에 대한 열을 가져 온다.
-        question, answer = None
+        if (os.path.exists(DEFINES.dataPath)):
+            data_df = pd.read_csv(DEFINES.dataPath, encoding='utf-8')
+            # 판다스의 데이터 프레임을 통해
+            # 질문과 답에 대한 열을 가져 온다.
+            question, answer = list(data_df['Q']), list(data_df['A'])
         data = []
         # 질문과 답변을 extend을
         # 통해서 구조가 없는 배열로 만든다.
@@ -264,9 +264,9 @@ def load_voc():
         data.extend(answer)
 
         # data를 토크나이즈하여 words에 저장한다. 
-        words = None
+        words = tokenizing_data(data)
         # 중복되는 단어(토큰)를 제거
-        words = None
+        words = list(set(words))
 
         # 데이터 없는 내용중에 MARKER 추가
         words[:0] = MARKER
@@ -274,15 +274,19 @@ def load_voc():
         # 사전 파일을 생성 
         # DEFINES.vocabulary_path에 words안에 저장된 가 단어(토큰)들을 한줄 씩 저장
         with open(DEFINES.vocabulary_path, 'w', encoding='utf-8') as voc_file:
+            for word in words:
+                voc_file.write(word + '\n')
 
     # 사전 파일에서 단어(토큰)을 가져와 voc_list에 저장
     with open(DEFINES.vocabulary_path, 'r', encoding='utf-8') as voc_file:
+        for line in voc_file:
+            voc_list.append(line.strip())
 
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
     char2idx, idx2char = make_voc(voc_list)
 
-    return None
-
+    return char2idx, idx2char, len(char2idx)
+"""
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
 
