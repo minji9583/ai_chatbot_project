@@ -43,15 +43,15 @@ def main(self):
     train_input_dec = data.dec_input_processing(train_a, char2idx)
     print('train_input_dec', train_input_dec)
     # 훈련셋 디코딩 출력 부분
-    train_target_dec = data.dec_target_processing(train_a, idx2char)
+    train_target_dec = data.dec_target_processing(train_a, char2idx)
     print('train_target_dec', train_target_dec)
-    '''
+
     # 평가셋 인코딩 만드는 부분
-    eval_input_enc = None
+    eval_input_enc = data.enc_processing(test_q, char2idx)
     # 평가셋 인코딩 만드는 부분
-    eval_input_dec = None
+    eval_input_dec = data.dec_input_processing(test_a, char2idx)
     # 평가셋 인코딩 만드는 부분
-    eval_target_dec = None
+    eval_target_dec = data.dec_target_processing(test_a, char2idx)
 
     # 현재 경로'./'에 현재 경로 하부에
     # 체크 포인트를 저장한 디렉토리를 설정한다.
@@ -88,7 +88,7 @@ def main(self):
         eval_input_enc, eval_input_dec, eval_target_dec, DEFINES.batch_size))
 
     print('\nEVAL set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
-
+    '''
     # 테스트용 데이터 만드는 부분이다.
     # 인코딩 부분 만든다. 테스트용으로 ["가끔 궁금해"] 값을 넣어 형성된 대답과 비교를 한다.
     predic_input_enc = None

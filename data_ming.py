@@ -157,12 +157,12 @@ def dec_input_processing(value, dictionary):
     
     return np.array(seq_input_index)
 
-print('dec', dec_input_processing(train_a, tokenizing_data(train_a)))
+# print('dec', dec_input_processing(train_a, tokenizing_data(train_a)))
 
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리 
 def dec_target_processing(value, dictionary):
-    print('train_target_dec value', value)
-    print('train_target_dec dict', dictionary)
+    # print('train_target_dec value', value)
+    # print('train_target_dec dict', dictionary)
     
     # 인덱스 정보를 저장할 배열 초기화
     seq_input_index = []
@@ -172,33 +172,31 @@ def dec_target_processing(value, dictionary):
     value = prepro_noise_canceling(value)
     
     for seq in value:
-        print('dec_target_processing seq', seq)
         # 하나의 seq에 index를 저장할 배열 초기화
-        # seq_index = [dictionary[word] for word in seq.split()]
-        seq_index = [word for word in seq.split()]
-        print('dec_target_processing seq_index', seq_index)
-        # print('seq_index', seq_index)
+        seq_index = []
+        for word in seq.split():
+            # print('word', word)
+            if dictionary.get(word) is not None:
+                seq_index.extend([dictionary.get(word)])
+
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
         if len(seq_index) > DEFINES.max_sequence_length:
-            seq_index = seq_index[:DEFINES.max_sequence_length]
-        # print('seq_index', seq_index)
-
+            seq_index = seq_index[:DEFINES.max_sequence_length-1]
+        seq_index.extend([END])
+        # print(seq_index)
         # seq의 길이를 저장
-            seq_len.append(len(seq_index))
+        seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
+        if len(seq_index) < DEFINES.max_sequence_length:
             seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
-        else:
-        # print('seq_index', seq_index)`
-        #
-        # print('seq_index', seq_index)
+
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_index[DEFINES.max_sequence_length-1] = END
         seq_input_index.append(seq_index)
 
     return np.array(seq_input_index)
-print('dec_target_processing', dec_target_processing(train_a, tokenizing_data(train_a)))
+# print('dec_target_processing', dec_target_processing(train_a, tokenizing_data(train_a)))
 
 # input과 output dictionary를 만드는 함수
 def in_out_dict(input, output, target):
