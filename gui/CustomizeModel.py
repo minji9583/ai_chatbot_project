@@ -2,11 +2,13 @@ import sys
 import os
 import matplotlib.pyplot as plt
 import pickle
+import numpy as np
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import QCoreApplication
 from PyQt5 import QtWidgets, QtCore, QtGui
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class MyApp(QWidget):
@@ -31,52 +33,76 @@ class MyApp(QWidget):
         }
         
     """
-    
 
     def __init__(self):
         super().__init__()
         self.userTestCnt = 0;
-        self.userTestres = [];
-        self.resize(600, 150)
-        self.setFixedSize(600, 150)
+        self.userTestres = [[], [], []];
+        self.resize(600, 180)
+        self.setFixedSize(600, 180)
         self.container = QtWidgets.QVBoxLayout(self)
         self.container.setContentsMargins(1, 1, 1, 1)
 
         self.setLayout(self.container)
         self.initUI()
 
-
     def initUI(self): 
-        self.step1 = QGroupBox("step1")
-            
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint) #프레임을 없애고
-
         #self.setStyleSheet(self.css) # css를 적용함
+
+        #타이틀 바 설정
         titlebar_widget =  MainTitleBar(self)
+        #타이틀 바에 고유 아이디 등록(qss에 사용)
         titlebar_widget.setObjectName("windowTitle")
-        
+
         self.container.addWidget(titlebar_widget)
-        self.container.addWidget(self.step1)
-        
+
         self.grid = QGridLayout()
         self.sFile = QLabel("선택한 파일이없습니다.")
-        
-        self.selectFileBtn = QPushButton("파일 선택", self)
-        self.selectFileBtn.clicked.connect(self.showFileDialog)
-        self.startBtn = QPushButton("학습 시작", self)
-        self.startBtn.clicked.connect(self.start)
+
+        #학습 데이터 선택 라벨
         self.selectFileLb = QLabel('학습 데이터 선택 : ');
 
-        self.grid.addWidget(self.selectFileLb, 0, 0)
-        self.grid.addWidget(self.sFile, 0, 1)
-        self.grid.addWidget(self.selectFileBtn, 0,2)
-        self.grid.addWidget(self.startBtn,1,1)
-        
-        self.step1.setLayout(self.grid)
+        #학습 데이터 경로
+        self.sFile = QLabel("")
 
-        fname = QFileDialog.getOpenFileName(self)
-        print("select : " + fname[0])
-        self.sFile.setText(fname[0])
+        # 파일 선택버튼
+        self.selectFileBtn = QPushButton("파일 선택", self)
+        self.selectFileBtn.clicked.connect(self.showFileDialog)
+        self.selectFileBtn.setMaximumSize(100,30)
+        self.selectFileBtn.setMinimumSize(100,30)
+
+        # 빈공간 라벨
+        self.blankHeight = QLabel("")
+        self.blankHeight.setFixedHeight(0.05)
+        
+        # 학습 시작 버튼
+        self.startBtn = QPushButton("학습 시작 >", self)
+        self.startBtn.clicked.connect(self.start)
+        self.startBtn.setMaximumSize(100,35)
+        self.startBtn.setMinimumSize(100,35)
+
+        #컨텐트 박스에 위젯들 붙이기
+        self.contentBox = QGridLayout()
+        self.contentBox.addWidget(self.selectFileLb,0,0)
+        self.contentBox.addWidget(self.sFile,0,1)
+        self.contentBox.addWidget(self.selectFileBtn,0,2)
+  
+        
+        self.contentBox.addWidget(self.blankHeight,1,2)
+        self.contentBox.addWidget(self.startBtn,2,2)
+
+        #컨텐츠 박스를 step1 그룹박스에 붙이기
+        self.step1 = QGroupBox("step1")
+        self.step1.setLayout(self.contentBox)
+        self.container.addWidget(self.step1)
+
+    
+        #타이틀바 위젯을 메인컨테이너에 붙이기
+        self.container.addWidget(titlebar_widget)
+        #step1을 메인컨테이너에 붙이기
+        self.container.addWidget(self.step1)
+             
 
         self.center()
         self.show()
@@ -85,6 +111,7 @@ class MyApp(QWidget):
         # 검증절차를 넣는다
         if self.sFile.text() == "" :
             msg = QMessageBox()
+    
             msg.setText("학습데이터를 선택하세요!")
             msg.exec()
             return;
@@ -104,54 +131,66 @@ class MyApp(QWidget):
         self.step2.setLayout(self.grid)
         self.container.addStretch()
         self.tmpbtn = QPushButton("프로그레스바 컴플릿!", self);
-        self.tmpbtn.clicked.connect(self.setFianlUI)
+        self.tmpbtn.clicked.connect(self.setFinalUI)
         self.grid.addWidget(self.tmpbtn, 0, 1)
 
-    def setFianlUI(self):
+    def setFinalUI(self):
         self.resize(600, 800)
         self.setFixedSize(600, 800)
         self.center()
         self.step2.deleteLater();
 
+        #### 선언부 ####
         self.step3 = QGroupBox("step3 : 테스트 해보기")
         self.container.addWidget(self.step3)
         self.grid3 = QGridLayout()
         self.step3.setLayout(self.grid3)
+
+        self.fig = plt.Figure()
+        self.canvas = FigureCanvas(self.fig)
+        self.container.addWidget(self.canvas)
+        self.canvas.draw();
 
         self.step4 = QGroupBox("step4 : 저장하기")
         self.container.addWidget(self.step4)
         self.grid4 = QGridLayout()
         self.step4.setLayout(self.grid4)
 
-        inputData = QLineEdit()
-        inputData.setPlaceholderText("테스트할 문장을 입력하세요")
-        inputData.setFocus();
+
+        #### 구현부 - step3 ####
+        self.inputData = QLineEdit()
+        self.inputData.setPlaceholderText("테스트할 문장을 입력하세요")
+        self.inputData.setFocus();
         testBtn = QPushButton("test!");
-        #testBtn.clicked.connect(None);
-        self.outputData1 = QLabel("111111111111111");
-        self.outputData2 = QLabel("222222222222222");
-        self.outputData3 = QLabel("33333333333333");
+        testBtn.clicked.connect(self.testData);
+        self.outputData1 = QLabel("");
+        self.outputData2 = QLabel("");
+        self.outputData3 = QLabel("");
 
         self.grid3.addWidget(QLabel("입력값 : "),0,0)
-        self.grid3.addWidget(inputData,0,1)
+        self.grid3.addWidget(self.inputData,0,1)
         self.grid3.addWidget(testBtn,0,2)
         self.grid3.addWidget(QLabel("출력값 : "), 1,0)
         self.grid3.addWidget(self.outputData1, 1,1,1,2)
         self.grid3.addWidget(self.outputData2, 2,1,2,2)
         self.grid3.addWidget(self.outputData3, 3,1,3,2);
 
+        #### 구현부 - step4 ####
         selectbox = QGroupBox("학습 모델 선택")
         grid5 = QGridLayout()
         selectbox.setLayout(grid5)
 
         self.sPath = QLabel("")
         pathBtn = QPushButton("찾기")
+        pathBtn.clicked.connect(self.showPathDialog)
         self.sFname = QLineEdit()
         saveBtn = QPushButton("저장")
+        saveBtn.clicked.connect(self.saveCLF)
 
         self.radio1 = QRadioButton("A", self)
         self.radio2 = QRadioButton("B", self)
         self.radio3 = QRadioButton("C", self)
+        self.radio1.setChecked(True)
 
         grid5.addWidget(self.radio1, 0, 0)
         grid5.addWidget(self.radio2, 0, 1)
@@ -166,6 +205,30 @@ class MyApp(QWidget):
         self.grid4.addWidget(QLabel(".clf"))
         self.grid4.addWidget(saveBtn,3,1)
 
+    def testData(self):
+        #사용자가 실험하고 싶은 문장
+        testData = self.inputData.text();
+
+        #TODO :: 원래라면, 학습모델에 데이터를 넣고 결과와 정확도를 뽑아내야함.
+        #임의데이터
+        self.userTestCnt = self.userTestCnt+1;
+        self.userTestres[0].append((self.userTestCnt + 0) * self.userTestCnt)
+        self.userTestres[1].append((self.userTestCnt + 1) * self.userTestCnt)
+        self.userTestres[2].append((self.userTestCnt + 2) * self.userTestCnt)
+        self.outputData1.setText("대략 바뀐 텍스트1" + testData)
+        self.outputData2.setText("대략 바뀐 텍스트2" + testData)
+        self.outputData3.setText("대략 바뀐 텍스트3" + testData)
+
+        idx = np.arange(0, self.userTestCnt, 1)
+
+        ax = self.fig.add_subplot(1,1,1)
+        ax.plot(idx, self.userTestres[0])
+        ax.plot(idx, self.userTestres[1])
+        ax.plot(idx, self.userTestres[2])
+        plt.xlabel('테스트 데이터')
+        plt.ylabel('정확도')
+
+        self.canvas.draw()
 
     def showFileDialog(self):
         fname = QFileDialog.getOpenFileName(self)
@@ -178,17 +241,40 @@ class MyApp(QWidget):
         self.sPath.setText(pname)
 
     def saveCLF(self):
-        # 학습 결과
-        res = "this is result!"
+        # 검증과정
+        if self.sFname.text() == '':
+            msg = QMessageBox()
+            msg.setText("파일 이름을 입력하세요!")
+            msg.exec()
+            return;
+        elif self.sPath.text()=='' :
+            msg = QMessageBox()
+            msg.setText("저장 경로를 선택하세요!")
+            msg.exec()
+            return;
+
+        sAlgo = ""
+        # 사용자가 선택한 저장할 학습 결과
+        if self.radio1.isChecked() :
+            res = 'A'
+            sAlgo = "A알고리즘"
+        elif self.radio2.isChecked():
+            res = 'B'
+            sAlgo = "B알고리즘"
+        elif self.radio3.isChecked():
+            res = 'C'
+            sAlgo = "C알고리즘"
 
         # 사용자가 입력한 저장 파일 이름
-        fname = self.filename.text()
+        fname = self.sFname.text()
 
         path = self.sPath.text() + "//" + fname + ".clf"
 
         with open(path, 'wb') as f:
             pickle.dump(res, f);
-            self.saveCompleteBox.exec()
+            msg = QMessageBox()
+            msg.setText(sAlgo + " : 저장되었습니다!")
+            msg.exec()
         return
 
     def center(self):
@@ -288,6 +374,7 @@ class MainTitleBar(QtWidgets.QWidget):
             self.is_maximized = True
 
     '''
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
