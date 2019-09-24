@@ -104,7 +104,7 @@ def enc_processing(value, dictionary):
 
     return np.asarray(seq_input_index)
 
-"""
+
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
 
@@ -121,26 +121,29 @@ def dec_input_processing(value, dictionary):
 
         for word in seq.split():
             # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
-            sequence_index = None
+            seq_index = dictionary[STD]
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
+                seq_index.extend(dictionary[word])
             else:
-                # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다 
+                # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
+                seq_index.extend(dictionary[UNK])
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        if len(sequence_index) > DEFINES.max_sequence_length:
-            sequence_index = None
+        if len(seq_index) > DEFINES.max_sequence_length:
+            seq_index = seq_index[:DEFINES.max_sequence_length]
 
         # seq의 길이를 저장
-        seq_len.append(None)
+        seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [dictionary[PAD]]
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
+        seq_input_index.append(seq_index)
 
-    return None
+    return np.asarray(seq_input_index)
+
 
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리 
 def dec_target_processing(value, dictionary):
@@ -159,19 +162,21 @@ def dec_target_processing(value, dictionary):
 
         seq_index = [dictionary[word] for word in seq.split()]
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
-        sequence_index = None
+        if len(seq_index) > DEFINES.max_sequence_length:
+            # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
+            seq_index = seq_index[:DEFINES.max_sequence_length-1] + [dictionary[END]]
+        seq_index += [dictionary[END]]
 
         # seq의 길이를 저장
-        seq_len.append(None)
+        seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += None
+        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [dictionary[PAD]]
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
-        seq_input_index.append(None)
+        seq_input_index.append(seq_index)
 
-    return None
+    return np.asarray(seq_input_index)
 
 # input과 output dictionary를 만드는 함수
 def in_out_dict(input, output, target):
@@ -235,6 +240,7 @@ def eval_input_fn(eval_input_enc, eval_input_dec, eval_target_dec, batch_size):
     # 텐서 개체를 넘겨준다.
     return iterator.get_next()
 
+
 # Req 1-3-1. 단어 사전 파일 vocabularyData.voc를 생성하고 단어와 인덱스 관계를 출력
 def load_voc():
     # 사전을 담을 배열 준비한다.
@@ -246,11 +252,11 @@ def load_voc():
         # 데이터를 가지고 만들어야 한다.
         # 그래서 데이터가 존재 하면 사전을 만들기 위해서
         # 데이터 파일의 존재 유무를 확인한다.
-
-        data_df = None
-        # 판다스의 데이터 프레임을 통해
-        # 질문과 답에 대한 열을 가져 온다.
-        question, answer = None
+        if (os.path.exists(DEFINES.dataPath)):
+            data_df = pd.read_csv(DEFINES.dataPath, encoding='utf-8')
+            # 판다스의 데이터 프레임을 통해
+            # 질문과 답에 대한 열을 가져 온다.
+            question, answer = list(data_df['Q']), list(data_df['A'])
         data = []
         # 질문과 답변을 extend을
         # 통해서 구조가 없는 배열로 만든다.
@@ -258,9 +264,9 @@ def load_voc():
         data.extend(answer)
 
         # data를 토크나이즈하여 words에 저장한다. 
-        words = None
+        words = tokenizing_data(data)
         # 중복되는 단어(토큰)를 제거
-        words = None
+        words = list(set(words))
 
         # 데이터 없는 내용중에 MARKER 추가
         words[:0] = MARKER
@@ -268,24 +274,37 @@ def load_voc():
         # 사전 파일을 생성 
         # DEFINES.vocabulary_path에 words안에 저장된 가 단어(토큰)들을 한줄 씩 저장
         with open(DEFINES.vocabulary_path, 'w', encoding='utf-8') as voc_file:
+            for word in words:
+                voc_file.write(word + '\n')
 
     # 사전 파일에서 단어(토큰)을 가져와 voc_list에 저장
     with open(DEFINES.vocabulary_path, 'r', encoding='utf-8') as voc_file:
+        for line in voc_file:
+            voc_list.append(line.strip())
 
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
     char2idx, idx2char = make_voc(voc_list)
 
-    return None
+    return char2idx, idx2char, len(char2idx)
 
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
-
-    return None
+    char2idx = {char: idx for idx, char in enumerate(voc_list)}
+    idx2char = {idx: char for idx, char in enumerate(voc_list)}
+    return char2idx, idx2char
 
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
+    sentenceString = []
+    for v in value:
+        sentenceString = [dictionary[index] for index in v['index']]
 
-    return None
+    answer =""
+    for word in sentenceString:
+        if word not in PAD:
+            answer += word
+            answer += " "
+    return answer
 
 
 def main(self):
@@ -295,4 +314,3 @@ def main(self):
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
-"""
