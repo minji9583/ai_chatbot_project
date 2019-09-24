@@ -58,7 +58,6 @@ def enc_processing(value, dictionary):
     value = prepro_noise_canceling(value)
 
     for seq in value:
-
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = []
         words = tokenizing_data(seq)
@@ -68,15 +67,16 @@ def enc_processing(value, dictionary):
                 seq_index.extend([dictionary.get(word)])
             else:
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다 
-                seq_index.extend([UNK])
+                # seq_index.extend([UNK])
+                seq_index.extend([UNK_INDEX])
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
             seq_index = seq_index[:DEFINES.max_sequence_length]
         # seq의 길이를 저장
         seq_len.append(len(seq_index))
-
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
+        # seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
+        seq_index += [PAD_INDEX] * (DEFINES.max_sequence_length - len(seq_index))
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
@@ -97,7 +97,8 @@ def dec_input_processing(value, dictionary):
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = []
         # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
-        seq_index.extend([STD])
+        # seq_index.extend([STD])
+        seq_index.extend([STD_INDEX])
 
         for word in seq.split():
             if dictionary.get(word) is not None:
@@ -105,7 +106,8 @@ def dec_input_processing(value, dictionary):
                 seq_index.extend([dictionary.get(word)])
             else:
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
-                seq_index.extend([UNK])
+                # seq_index.extend([UNK])
+                seq_index.extend([UNK_INDEX])
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
             seq_index = seq_index[:DEFINES.max_sequence_length]
@@ -114,8 +116,9 @@ def dec_input_processing(value, dictionary):
         seq_len.append(seq_index)
         
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
-        
+        # seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
+        seq_index += [PAD_INDEX] * (DEFINES.max_sequence_length - len(seq_index))
+
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
     # print(np.array(seq_input_index))
@@ -142,19 +145,22 @@ def dec_target_processing(value, dictionary):
                 seq_index.extend([dictionary.get(word)])
             else:
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
-                seq_index.extend([UNK])
+                # seq_index.extend([UNK])
+                seq_index.extend([UNK_INDEX])
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
             seq_index = seq_index[:DEFINES.max_sequence_length-1]
         # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
-        seq_index.extend([END])
-            
+        # seq_index.extend([END])
+        seq_index.extend([END_INDEX])
+
         # seq의 길이를 저장
         seq_len.append(len(seq_index))
         
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
-        
+        # seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
+        seq_index += [PAD_INDEX] * (DEFINES.max_sequence_length - len(seq_index))
+
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
     # print(np.array(seq_input_index))
@@ -271,11 +277,9 @@ def load_voc():
 
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
-    char2idx, idx2char = dict(), dict()
-    for i in range(len(voc_list)):
-        word = voc_list[i]
-        char2idx[word] = i+1
-        idx2char[i+1] = word
+    char2idx = {char: idx for idx, char in enumerate(voc_list)}
+    idx2char = {idx: char for idx, char in enumerate(voc_list)}
+
     return char2idx, idx2char
 
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
@@ -288,9 +292,9 @@ def pred_next_string(value, dictionary):
 
 def main(self):
     char2idx, idx2char, voc_length = load_voc()
-    train_q, train_a, test_q, test_a = load_data()
-    enc_processing(train_q, char2idx)
-    print(pred_next_string([4, 62, 473, 4423, 2354, 2, 46], idx2char))
+    # train_q, train_a, test_q, test_a = load_data()
+    # enc_processing(train_q, char2idx)
+    # print(pred_next_string([4, 62, 473, 4423, 2354, 2, 46], idx2char))
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
