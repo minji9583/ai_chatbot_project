@@ -64,13 +64,14 @@ def main(self):
         # model_fn=ml.Model,  # 모델 등록한다.
         model_dir=DEFINES.check_point_path,  # 체크포인트 위치 등록한다.
         params={  # 모델 쪽으로 파라메터 전달한다.
-            'model_hidden_size': DEFINES.hidden_size,  # 가중치 크기 설정한다.
+            'hidden_size': DEFINES.hidden_size,  # 가중치 크기 설정한다.
             # 'ffn_hidden_size': DEFINES.ffn_hidden_size,
             # 'attention_head_size': DEFINES.attention_head_size,
             'learning_rate': DEFINES.learning_rate,  # 학습율 설정한다.
             'vocabulary_length': vocabulary_length,  # 딕셔너리 크기를 설정한다.
             'embedding_size': DEFINES.embedding_size,  # 임베딩 크기를 설정한다.
             'embedding': DEFINES.embedding,  # 임베딩 사용 유무를 설정한다.
+            'multilayer': DEFINES.multilayer,  # 멀티 레이어 사용 유무를 설정한다.
             'layer_size': DEFINES.layer_size,
             'max_sequence_length': DEFINES.max_sequence_length,
             # 'xavier_initializer': DEFINES.xavier_initializer
