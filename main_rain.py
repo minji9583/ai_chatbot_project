@@ -37,15 +37,15 @@ def main(self):
     # 훈련셋 인코딩 만드는 부분
     train_input_enc = data.enc_processing(train_q, char2idx)
     # 훈련셋 디코딩 입력 부분
-    train_input_dec = data.dec_input_processing(train_a, char2idx)
+    train_input_dec = data.dec_input_processing(train_a, idx2char)
     # 훈련셋 디코딩 출력 부분
     train_target_dec = data.dec_target_processing(train_a, char2idx)
 
     # 평가셋 인코딩 만드는 부분
     eval_input_enc = data.enc_processing(test_q, char2idx)
-    # 평가셋 인코딩 만드는 부분
-    eval_input_dec = data.dec_input_processing(test_a, char2idx)
-    # 평가셋 인코딩 만드는 부분
+    # 평가셋 디코딩 입력 부분
+    eval_input_dec = data.dec_input_processing(test_a, idx2char)
+    # 평가셋 디코딩 출력 부분
     eval_target_dec = data.dec_target_processing(test_a, char2idx)
 
     # 현재 경로'./'에 현재 경로 하부에
@@ -76,6 +76,7 @@ def main(self):
             # 'xavier_initializer': DEFINES.xavier_initializer
         })
 
+    print(train_input_enc, train_input_dec, train_target_dec)
     # 학습 실행
     classifier.train(input_fn=lambda: data.train_input_fn(
         train_input_enc, train_input_dec, train_target_dec, DEFINES.batch_size), steps=DEFINES.train_steps)
@@ -111,4 +112,4 @@ if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
 
-# tf.logging.set_verbosity
+tf.logging.set_verbosity
