@@ -292,11 +292,19 @@ def make_voc(voc_list):
     char2idx = {char: idx for idx, char in enumerate(voc_list)}
     idx2char = {idx: char for idx, char in enumerate(voc_list)}
     return char2idx, idx2char
-"""
+
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
+    sentenceString = []
+    for v in value:
+        sentenceString = [dictionary[index] for index in v['index']]
 
-    return None
+    answer =""
+    for word in sentenceString:
+        if word not in PAD:
+            answer += word
+            answer += " "
+    return answer
 
 
 def main(self):
@@ -306,4 +314,3 @@ def main(self):
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)
-"""
