@@ -37,8 +37,8 @@ class MyApp(QWidget):
         super().__init__()
         self.userTestCnt = 0;
         self.userTestres = [];
-        self.resize(600, 150)
-        self.setFixedSize(600, 150)
+        self.resize(600, 180)
+        self.setFixedSize(600, 180)
         self.container = QtWidgets.QVBoxLayout(self)
         self.container.setContentsMargins(1, 1, 1, 1)
 
@@ -47,36 +47,56 @@ class MyApp(QWidget):
 
 
     def initUI(self): 
-        self.step1 = QGroupBox("step1")
-            
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint) #프레임을 없애고
-
         #self.setStyleSheet(self.css) # css를 적용함
+
+        #타이틀 바 설정
         titlebar_widget =  MainTitleBar(self)
+        #타이틀 바에 고유 아이디 등록(qss에 사용)
         titlebar_widget.setObjectName("windowTitle")
-        
-        self.container.addWidget(titlebar_widget)
-        self.container.addWidget(self.step1)
-        
-        self.grid = QGridLayout()
-        self.sFile = QLabel("선택한 파일이없습니다.")
-        
-        self.selectFileBtn = QPushButton("파일 선택", self)
-        self.selectFileBtn.clicked.connect(self.showFileDialog)
-        self.startBtn = QPushButton("학습 시작", self)
-        self.startBtn.clicked.connect(self.start)
+
+        #학습 데이터 선택 라벨
         self.selectFileLb = QLabel('학습 데이터 선택 : ');
 
-        self.grid.addWidget(self.selectFileLb, 0, 0)
-        self.grid.addWidget(self.sFile, 0, 1)
-        self.grid.addWidget(self.selectFileBtn, 0,2)
-        self.grid.addWidget(self.startBtn,1,1)
-        
-        self.step1.setLayout(self.grid)
+        #학습 데이터 경로
+        self.sFile = QLabel("")
 
-        fname = QFileDialog.getOpenFileName(self)
-        print("select : " + fname[0])
-        self.sFile.setText(fname[0])
+        # 파일 선택버튼
+        self.selectFileBtn = QPushButton("파일 선택", self)
+        self.selectFileBtn.clicked.connect(self.showFileDialog)
+        self.selectFileBtn.setMaximumSize(100,30)
+        self.selectFileBtn.setMinimumSize(100,30)
+
+        # 빈공간 라벨
+        self.blankHeight = QLabel("")
+        self.blankHeight.setFixedHeight(0.05)
+        
+        # 학습 시작 버튼
+        self.startBtn = QPushButton("학습 시작 >", self)
+        self.startBtn.clicked.connect(self.start)
+        self.startBtn.setMaximumSize(100,35)
+        self.startBtn.setMinimumSize(100,35)
+
+        #컨텐트 박스에 위젯들 붙이기
+        self.contentBox = QGridLayout()
+        self.contentBox.addWidget(self.selectFileLb,0,0)
+        self.contentBox.addWidget(self.sFile,0,1)
+        self.contentBox.addWidget(self.selectFileBtn,0,2)
+  
+        
+        self.contentBox.addWidget(self.blankHeight,1,2)
+        self.contentBox.addWidget(self.startBtn,2,2)
+
+        #컨텐츠 박스를 step1 그룹박스에 붙이기
+        self.step1 = QGroupBox("step1")
+        self.step1.setLayout(self.contentBox)
+
+    
+        #타이틀바 위젯을 메인컨테이너에 붙이기
+        self.container.addWidget(titlebar_widget)
+        #step1을 메인컨테이너에 붙이기
+        self.container.addWidget(self.step1)
+             
 
         self.center()
         self.show()
@@ -85,6 +105,7 @@ class MyApp(QWidget):
         # 검증절차를 넣는다
         if self.sFile.text() == "" :
             msg = QMessageBox()
+    
             msg.setText("학습데이터를 선택하세요!")
             msg.exec()
             return;
