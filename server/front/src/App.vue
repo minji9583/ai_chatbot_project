@@ -1,15 +1,16 @@
 <template>
   <div id="app">
-    <chat></chat>
+    <abchat></abchat>
   </div>
 </template>
 
 <script>
+import abchat from '@/components/vue-abchat.vue'
 
 export default {
   name: 'app',
   components: {
-    chat
+    abchat
   }
 }
 </script>
