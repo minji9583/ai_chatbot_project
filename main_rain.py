@@ -40,6 +40,7 @@ def main(self):
     train_input_dec = data.dec_input_processing(train_a, idx2char)
     # 훈련셋 디코딩 출력 부분
     train_target_dec = data.dec_target_processing(train_a, char2idx)
+    print("train\n", train_input_enc, train_input_dec, train_target_dec)
 
     # 평가셋 인코딩 만드는 부분
     eval_input_enc = data.enc_processing(test_q, char2idx)
@@ -47,6 +48,7 @@ def main(self):
     eval_input_dec = data.dec_input_processing(test_a, idx2char)
     # 평가셋 디코딩 출력 부분
     eval_target_dec = data.dec_target_processing(test_a, char2idx)
+    print("test\n", eval_input_enc, eval_input_dec, eval_target_dec)
 
     # 현재 경로'./'에 현재 경로 하부에
     # 체크 포인트를 저장한 디렉토리를 설정한다.
@@ -77,7 +79,7 @@ def main(self):
             # 'xavier_initializer': DEFINES.xavier_initializer
         })
 
-    print(train_input_enc, train_input_dec, train_target_dec)
+    # print(train_input_enc, train_input_dec, train_target_dec)
     # 학습 실행
     classifier.train(input_fn=lambda: data.train_input_fn(
         train_input_enc, train_input_dec, train_target_dec, DEFINES.batch_size), steps=DEFINES.train_steps)
@@ -92,21 +94,24 @@ def main(self):
     predic_input_enc = data.enc_processing(["가끔 궁금해"], char2idx)
     # 학습 과정이 아니므로 디코딩 입력은
     # 존재하지 않는다.(구조를 맞추기 위해 넣는다.)
-    predic_input_dec = None
+    predic_input_dec = data.dec_input_processing([""], idx2char)
     # 학습 과정이 아니므로 디코딩 출력 부분도
     # 존재하지 않는다.(구조를 맞추기 위해 넣는다.)
-    predic_target_dec = None
+    predic_target_dec = data.dec_target_processing([""], char2idx)
 
+    print(predic_input_enc)
+    print(predic_input_dec)
+    print(predic_target_dec)
     predictions = classifier.predict(
         input_fn=lambda: data.eval_input_fn(predic_input_enc, predic_input_dec, predic_target_dec, 1))
-
+    print("predict", predictions)
     answer, finished = data.pred_next_string(predictions, idx2char)
 
     # 예측한 값을 인지 할 수 있도록
     # 텍스트로 변경하는 부분이다.
     print("answer: ", answer)
-    print("Bleu score: ", bleu_compute("그 사람도 그럴 거예요.", answer))
-    print("Rouge score: ", rouge_compute("그 사람도 그럴 거예요.", answer))
+    # print("Bleu score: ", bleu_compute("그 사람도 그럴 거예요.", answer))
+    # print("Rouge score: ", rouge_compute("그 사람도 그럴 거예요.", answer))
 
 
 if __name__ == '__main__':
