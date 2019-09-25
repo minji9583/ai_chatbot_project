@@ -7,8 +7,16 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtWidgets, QtCore, QtGui
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
+#=================================================================================================
 
+import numpy as np
+from konlpy.tag import Okt
+from scipy.sparse import lil_matrix
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 
+import time
 class MyApp(QWidget):
     css = """
         QWidget {
@@ -37,15 +45,40 @@ class MyApp(QWidget):
         super().__init__()
         self.userTestCnt = 0;
         self.userTestres = [];
-        self.resize(600, 180)
-        self.setFixedSize(600, 180)
+        self.resize(600, 280)
+        self.setFixedSize(600, 280)
         self.container = QtWidgets.QVBoxLayout(self)
         self.container.setContentsMargins(1, 1, 1, 1)
-
+        self.pbarValue = 0
         self.setLayout(self.container)
         self.initUI()
+        self.okt = Okt()
+        self.flag = False
+        """
+        Req 1-1-1. 데이터 읽기
+        read_data(): 데이터를 읽어서 저장하는 함수
+        """
 
 
+    def read_data(self,filename):
+        print(filename)
+        with open(filename, 'r', encoding='utf-8') as f:
+            datas = [line.split('\t') for line in f.read().splitlines()]
+            datas = datas[1:]
+        return datas
+        """
+        Req 1-1-2. 토큰화 함수
+        tokenize(): 텍스트 데이터를 받아 KoNLPy의 okt 형태소 분석기로 토크나이징
+        """
+    
+    
+    def tokenize(self,doc):
+        print("토크나이즈1")
+        tt = self.okt.pos(doc, norm=True, stem=True)
+        print("토크나이즈2")
+        return ['/'.join(t) for t in tt]
+    
+    
     def initUI(self): 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint) #프레임을 없애고
         #self.setStyleSheet(self.css) # css를 적용함
@@ -56,7 +89,7 @@ class MyApp(QWidget):
         titlebar_widget.setObjectName("windowTitle")
 
         #학습 데이터 선택 라벨
-        self.selectFileLb = QLabel('학습 데이터 선택 : ');
+        self.selectFileLb = QLabel('Selected File : ');
 
         #학습 데이터 경로
         self.sFile = QLabel("")
@@ -72,32 +105,48 @@ class MyApp(QWidget):
         self.blankHeight.setFixedHeight(0.05)
         
         # 학습 시작 버튼
-        self.startBtn = QPushButton("학습 시작 >", self)
-        self.startBtn.clicked.connect(self.start)
-        self.startBtn.setMaximumSize(100,35)
-        self.startBtn.setMinimumSize(100,35)
+        self.gkrBtn = QPushButton("학습하기", self)
+        self.gkrBtn.clicked.connect(self.gkrtmq)
 
         #컨텐트 박스에 위젯들 붙이기
         self.contentBox = QGridLayout()
         self.contentBox.addWidget(self.selectFileLb,0,0)
         self.contentBox.addWidget(self.sFile,0,1)
         self.contentBox.addWidget(self.selectFileBtn,0,2)
-  
-        
         self.contentBox.addWidget(self.blankHeight,1,2)
-        self.contentBox.addWidget(self.startBtn,2,2)
+        self.contentBox.addWidget(self.gkrBtn,2,2)
 
         #컨텐츠 박스를 step1 그룹박스에 붙이기
-        self.step1 = QGroupBox("step1")
+        self.step1 = QGroupBox("step1 : 학습시킬 데이터 파일을 선택합니다.")
         self.step1.setLayout(self.contentBox)
 
-    
         #타이틀바 위젯을 메인컨테이너에 붙이기
         self.container.addWidget(titlebar_widget)
         #step1을 메인컨테이너에 붙이기
         self.container.addWidget(self.step1)
-             
 
+
+        self.grid = QGridLayout()
+
+        #학습 진행률을 나타낼 프로그레스바 선언
+        self.pbar = QProgressBar(self)
+        #프로그레스바 퍼센트 ~~~
+        self.pbar.setValue(self.pbarValue)
+
+        self.nextBtn = QPushButton("NEXT!", self);
+        self.nextBtn.setDisabled(True)
+        self.nextBtn.clicked.connect(self.setFianlUI)
+
+      
+
+        self.grid.addWidget(self.pbar,0,1)
+        self.grid.addWidget(self.nextBtn, 1, 1)
+        self.step2 = QGroupBox("step2 : 데이터를 학습합니다.")
+        self.step2.setLayout(self.grid)
+        
+        self.container.addWidget(self.step2)
+        self.container.addStretch()
+        
         self.center()
         self.show()
 
@@ -105,29 +154,139 @@ class MyApp(QWidget):
         # 검증절차를 넣는다
         if self.sFile.text() == "" :
             msg = QMessageBox()
-    
             msg.setText("학습데이터를 선택하세요!")
             msg.exec()
             return;
 
         # 다음단계로 넘어가면서 새로운 도큐먼트들을 배치한다.
+
         self.setMoreUI()
 
+        
     def setMoreUI(self):
         # 이전 내용을 모두 지우고 프로그래스바를 띄운다
-        self.step1.deleteLater();
-        
-        #여기에 프로그래스바가 생겨야하고... 끝나면 더 늘리기
-        #프로그래스바는 나중에 했다치고, 프로그레스바가 끝나면 아래 버튼 이벤트가 실행되게
-        self.step2 = QGroupBox("step2")
-        self.container.addWidget(self.step2)
-        self.grid = QGridLayout()
-        self.step2.setLayout(self.grid)
-        self.container.addStretch()
-        self.tmpbtn = QPushButton("프로그레스바 컴플릿!", self);
-        self.tmpbtn.clicked.connect(self.setFianlUI)
-        self.grid.addWidget(self.tmpbtn, 0, 1)
+        print("그렇다면 이건 언제나오냐")
 
+        
+    def gkrtmq(self):
+        
+        """
+        데이터 전 처리
+        """
+       
+        # train, test 데이터 읽기
+        train_data = self.read_data('ratings_train.txt')[:5]
+        test_data = self.read_data('ratings_test.txt')[:5]
+
+        self.pbarValue = 5
+        self.pbar.setValue(self.pbarValue)
+
+
+        print( " 1 " )
+        
+        # Req 1-1-2. 문장 데이터 토큰화
+        # train_docs, test_docs : 토큰화된 트레이닝, 테스트  문장에 label 정보를 추가한 list
+
+
+        train_docs = [(self.tokenize(i[1]), i[2]) for i in train_data]
+        test_docs = [(self.tokenize(i[1]), i[2]) for i in test_data]
+        self.pbarValue = 15
+        self.pbar.setValue(self.pbarValue)
+
+        time.sleep(1)
+        print( " 2 " )
+        
+        # Req 1-1-3. word_indices 초기화
+        word_indices = {}
+
+        # Req 1-1-3. word_indices 채우기
+        for n_data in train_docs:
+            # 품사까지 dict화
+            for cnt in n_data[0]:
+                if not (word_indices.get(cnt)):
+                    word_indices[cnt] = len(word_indices) + 1
+            # 문자만 dict화
+            # n_data = n_data.split('/')[0]
+            # if not (word_indices.get(n_data)):
+            #     word_indices[n_data] = len(word_indices) + 1
+        # print(word_indices)
+
+        self.pbarValue = 25
+        self.pbar.setValue(self.pbarValue)
+
+
+        time.sleep(1)
+        print( " 3 " )
+
+        
+        # Req 1-1-4. sparse matrix(희소행렬 = 거의 0으로 채워지고 몇개의 값만 값이 존재) 초기화
+        # X: train feature data
+        # X_test: test feature data
+        X = lil_matrix((len(train_data), len(word_indices) + 1))
+        X_test = lil_matrix((len(test_data), len(word_indices) + 1))
+
+        self.pbarValue = 27
+        self.pbar.setValue(self.pbarValue)
+
+        time.sleep(1)
+        print( " 4 " )
+        
+        # 평점 label 데이터가 저장될 Y 행렬 초기화
+        # Y: train data label
+        # Y_test: test data label
+        Y = np.zeros((len(train_data)))
+        Y_test = np.zeros(((len(test_data))))
+
+        self.pbarValue = 28
+        self.pbar.setValue(self.pbarValue)
+
+        # Req 1-1-5. one-hot 임베딩
+        # X,Y 벡터값 채우기
+        for n in range(len(train_docs)):
+            for token in train_docs[n][0]:
+                indices = word_indices.get(token)
+                if indices:
+                    X[n, indices] = 1
+            Y[n] = train_docs[n][1]
+
+        for n in range(len(test_docs)):
+            for token in test_docs[n][0]:
+                indices = word_indices.get(token)
+                if indices:
+                    X_test[n, indices] = 1
+            Y_test[n] = test_docs[n][1]
+
+        self.pbarValue = 37
+        self.pbar.setValue(self.pbarValue)
+
+        print( " 5 " )
+        
+        #=================================================================================================
+
+        # Req 1-2-1. Naive bayes model 학습
+        clf = MultinomialNB()
+        self.pbarValue = 48
+        self.pbar.setValue(self.pbarValue)
+        clf.fit(X, Y)
+        self.pbarValue = 52
+        self.pbar.setValue(self.pbarValue)
+        # Req 1-2-2. Logistic regression model 학습
+        clf2 = LogisticRegression()
+        self.pbarValue = 73
+        self.pbar.setValue(self.pbarValue)
+        clf2.fit(X, Y)
+        self.pbarValue = 76
+        self.pbar.setValue(self.pbarValue)
+        # Req 2-3-3. 새로운 학습 모델 사용
+        knn = KNeighborsClassifier(n_neighbors=2)
+        self.pbarValue = 97
+        self.pbar.setValue(self.pbarValue)
+        knn.fit(X, Y)
+        self.pbarValue = 100
+        self.pbar.setValue(self.pbarValue)
+        self.nextBtn.setEnabled(True)
+            
+        
     def setFianlUI(self):
         self.resize(600, 800)
         self.setFixedSize(600, 800)
@@ -186,6 +345,22 @@ class MyApp(QWidget):
         self.grid4.addWidget(self.sFname,2,1)
         self.grid4.addWidget(QLabel(".clf"))
         self.grid4.addWidget(saveBtn,3,1)
+        
+
+        """
+        테스트 파트
+        """
+
+        # Req 1-3-1. 문장 데이터에 따른 예측된 분류값 출력
+        print("Naive bayesian classifier example result: {}, {}".format(test_data[3][1], clf.predict(X_test[3])))
+        print("Logistic regression exampleresult: {}, {}".format(test_data[3][1], clf2.predict(X_test[3])))
+        print("K Neighbors classifier example result: {}, {}".format(test_data[3][1], knn.predict(X_test[3])))
+
+        # Req 1-3-2. 정확도 출력
+        print("Naive bayesian classifier accuracy: {}".format(clf.score(X_test, Y_test)))
+        print("Logistic regression accuracy: {}".format(clf2.score(X_test, Y_test)))
+        print("K Neighbors classifier accuracy: {}".format(knn.score(X_test, Y_test)))
+
 
 
     def showFileDialog(self):
@@ -309,6 +484,12 @@ class MainTitleBar(QtWidgets.QWidget):
             self.is_maximized = True
 
     '''
+
+
+
+
+
+    
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
