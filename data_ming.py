@@ -30,10 +30,10 @@ def load_data(filename):
             Q.append(line[0])
             A.append(line[1])
     train_q, test_q, train_a, test_a = train_test_split(Q, A)
-    print(train_q)
-    print(test_q)
+    # print(train_q)
+    # print(test_q)
     return train_q, train_a, test_q, test_a
-train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
+# train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
 
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
@@ -55,11 +55,7 @@ def tokenizing_data(data):
     data = prepro_noise_canceling(data)
     dictionary = {}
     for i in data:
-        texts = i.split()
-        for text in texts:
-            if not dictionary.get(text):
-                dictionary[text] = len(dictionary)+1
-    print('dict', dictionary)
+        dictionary.extend(i.split())
     return dictionary
 # dictionary = tokenizing_data(train_q)
 
@@ -83,14 +79,14 @@ def enc_processing(value, dictionary):
         seq_index =[]
         
         for word in seq.split():
-            if dictionary.get(word) is not seq_index:
+            if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
 
                 # print('get', dictionary.get(word))
                 seq_index.extend([dictionary.get(word)])
 
             else:
-                seq_index.extend(UNK)
+                seq_index.extend([UNK_INDEX])
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
         # print(seq_index)
 
@@ -105,7 +101,7 @@ def enc_processing(value, dictionary):
         seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += [PAD]*(DEFINES.max_sequence_length - len(seq_index))
+        seq_index += [PAD_INDEX]*(DEFINES.max_sequence_length - len(seq_index))
         
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
@@ -114,11 +110,9 @@ def enc_processing(value, dictionary):
     # print('len', seq_len)
     return np.array(seq_input_index)
 
-print(enc_processing(train_q, tokenizing_data(train_q)))
 
 # Req 1-2-2. 디코더에 필요한 데이터 전 처리 
 def dec_input_processing(value, dictionary):
-    print('dict', dictionary)
     # 인덱스 정보를 저장할 배열 초기화
     seq_input_index = []
     # 문장의 길이를 저장할 배열 초기화
@@ -129,7 +123,7 @@ def dec_input_processing(value, dictionary):
     for seq in value:
         # 하나의 seq에 index를 저장할 배열 초기화
         # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
-        seq_index =[STD]
+        seq_index =[STD_INDEX]
         # print('seq_index', seq_index)
         for word in seq.split():
             # print('get', dictionary.get(word))
@@ -138,7 +132,7 @@ def dec_input_processing(value, dictionary):
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
 
             else:
-                seq_index.extend([UNK])
+                seq_index.extend([UNK_INDEX])
                 # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
         # print(seq_index)
 
@@ -150,7 +144,7 @@ def dec_input_processing(value, dictionary):
         seq_len.append(len(seq_index))
         
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
+        seq_index += [PAD_INDEX] * (DEFINES.max_sequence_length - len(seq_index))
         
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
@@ -181,20 +175,29 @@ def dec_target_processing(value, dictionary):
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
+        for word in seq.split():
+            # print('get', dictionary.get(word))
+            if dictionary.get(word) is not None:
+                seq_index.extend([dictionary.get(word)])
+                # seq_index에 dictionary 안의 인덱스를 extend 한다
+
+            else:
+                seq_index.extend([UNK_INDEX])
+                # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
+        # print(seq_index)
+
+        # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
             seq_index = seq_index[:DEFINES.max_sequence_length-1]
-        seq_index.extend([END])
-        # print(seq_index)
+
         # seq의 길이를 저장
         seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        if len(seq_index) < DEFINES.max_sequence_length:
-            seq_index += [PAD] * (DEFINES.max_sequence_length - len(seq_index))
-
+        seq_index.extend([END_INDEX])
+        seq_index += [PAD_INDEX] * (DEFINES.max_sequence_length - len(seq_index))
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
-
     return np.array(seq_input_index)
 # print('dec_target_processing', dec_target_processing(train_a, tokenizing_data(train_a)))
 
@@ -210,6 +213,9 @@ def train_input_fn(train_input_enc, train_input_dec, train_target_dec, batch_siz
     # 각각 한 문장으로 자른다고 보면 된다.
     # train_input_enc, train_output_dec, train_target_dec
     # 3개를 각각 한문장으로 나눈다.
+    print('data train_input_enc', train_input_enc)
+    print('data train_input_dec', train_input_dec)
+    print('data train_target_dec', train_target_dec)
     dataset = tf.data.Dataset.from_tensor_slices((train_input_enc, train_input_dec, train_target_dec))
     # 전체 데이터를 썩는다.
     dataset = dataset.shuffle(buffer_size=len(train_input_enc))
@@ -256,6 +262,7 @@ def eval_input_fn(eval_input_enc, eval_input_dec, eval_target_dec, batch_size):
     # make_one_shot_iterator를 통해
     # 이터레이터를 만들어 준다.
     iterator = dataset.make_one_shot_iterator()
+    print(iterator)
     # 이터레이터를 통해 다음 항목의
     # 텐서 개체를 넘겨준다.
     return iterator.get_next()
@@ -324,24 +331,28 @@ def make_voc(voc_list):
         if not char2idx.get(voca):
             char2idx[voca] = len(char2idx)+1
             idx2char[len(char2idx)] = voca
-    print('char2idx', char2idx)
-    print('idx2char', idx2char)
+    # print('char2idx', char2idx)
+    # print('idx2char', idx2char)
     return char2idx, idx2char
 
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
-    print(value)
+    print('pred_next_string', value)
     answer = ''
     for i in value:
-        if dictionary.get(i):
-            print(dictionary.get(i))
-            answer += dictionary.get(i)
+        print('i', i['indexs'])
+        for key in i['indexs']:
+            if dictionary.get(key) is not None:
+                answer += dictionary.get(key)
+                answer += ' '
+            # print('dictionary', dictionary.get(key))
+        # sentence_string = [dictionary[index] for index in i['indexs']]
+    # print('sentence_string', sentence_string)
     return answer, True
     
 
 def main(self):
     char2idx, idx2char, voc_length = load_voc()
-    print(pred_next_string([5, 6, 7, 8], idx2char))
 
 
 if __name__ == '__main__':
