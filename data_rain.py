@@ -42,9 +42,7 @@ def prepro_noise_canceling(data):
 
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
-    token_data = []
-    for i in range(len(data)):
-        token_data.extend(data[i].split())
+    token_data = data.split()
     return token_data
 
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
@@ -55,9 +53,8 @@ def enc_processing(value, dictionary):
     # 문장의 길이를 저장할 배열 초기화
     seq_len = []
     # 노이즈 캔슬
-    value = prepro_noise_canceling(value)
-
-    for seq in value:
+    n_value = prepro_noise_canceling(value)
+    for seq in n_value:
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = []
         words = tokenizing_data(seq)
@@ -284,10 +281,22 @@ def make_voc(voc_list):
 
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
-    result = ""
-    for i in value:
-        result += dictionary.get(i)
-    return result, True
+    result = []
+    for v in value:
+        print(v)
+        print(v['indexs'])
+        for i in v['indexs']:
+            if dictionary.get(i):
+                result.append(dictionary.get(i))
+    print(result)
+    answer = ""
+    for word in result:
+        if word not in PAD and word not in END:
+            answer += word
+            answer += " "
+
+    print(answer)
+    return answer, True
     
 
 def main(self):

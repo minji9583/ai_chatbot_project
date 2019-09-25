@@ -36,7 +36,7 @@ def model(features, labels, mode, params):
 
     # 임베딩된 인코딩 배치를 생성
     embedding_encoder = tf.nn.embedding_lookup(params = embedding, ids = features['input'])
-    print("in")
+
     # 임베딩된 디코딩 배치를 생성
     embedding_decoder = tf.nn.embedding_lookup(params = embedding, ids = features['output'])
 
