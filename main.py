@@ -11,6 +11,8 @@ from rouge import Rouge
 
 from configs import DEFINES
 
+import pickle
+
 DATA_OUT_PATH = './data_out/'
 
 # Req. 1-5-1. bleu score 계산 함수
@@ -29,16 +31,21 @@ def main(self):
     os.makedirs(data_out_path, exist_ok=True)
     # 데이터를 통한 사전 구성 한다.
     char2idx, idx2char, vocabulary_length = data.load_voc()
+
+
     # 훈련 데이터와 테스트 데이터를 가져온다.
     train_q, train_a, test_q, test_a = data.load_data()
 
+    '''
     # 훈련셋 인코딩 만드는 부분
     train_input_enc = data.enc_processing(train_q, char2idx)
+    # print('train_input_enc', train_input_enc)
     # 훈련셋 디코딩 입력 부분
     train_input_dec = data.dec_input_processing(train_a, idx2char)
+    # print('train_input_dec', train_input_dec)
     # 훈련셋 디코딩 출력 부분
     train_target_dec = data.dec_target_processing(train_a, char2idx)
-
+    # print('train_target_dec', train_target_dec)
     # 평가셋 인코딩 만드는 부분
     eval_input_enc = data.enc_processing(test_q, char2idx)
     # 평가셋 인코딩 만드는 부분
@@ -61,30 +68,36 @@ def main(self):
         model_fn=ml.model,  # 모델 등록한다.
         model_dir=DEFINES.check_point_path,  # 체크포인트 위치 등록한다.
         params={  # 모델 쪽으로 파라메터 전달한다.
-            'embedding': DEFINES.embedding, # 임베딩 사용 유무를 설정한다.
-            'hidden_size': DEFINES.hidden_size, # 가중치 크기 설정한다.
+            'embedding_size': DEFINES.embedding_size,
+            'hidden_size': DEFINES.hidden_size,  # 가중치 크기 설정한다.
             # 'ffn_hidden_size': DEFINES.ffn_hidden_size,
             # 'attention_head_size': DEFINES.attention_head_size,
             'learning_rate': DEFINES.learning_rate,  # 학습율 설정한다.
             'vocabulary_length': vocabulary_length,  # 딕셔너리 크기를 설정한다.
-            'embedding_size': DEFINES.embedding_size,  # 임베딩 크기를 설정한다.
+            'embedding': DEFINES.embedding,  # 임베딩 크기를 설정한다.
             'layer_size': DEFINES.layer_size,
             'max_sequence_length': DEFINES.max_sequence_length,
+            'multilayer' : DEFINES.multilayer,
             # 'xavier_initializer': DEFINES.xavier_initializer
         })
 
     # 학습 실행
-    classifier.train(input_fn=lambda: data.train_input_fn(
+    test = classifier.train(input_fn=lambda: data.train_input_fn(
         train_input_enc, train_input_dec, train_target_dec, DEFINES.batch_size), steps=DEFINES.train_steps)
-
+    print(test)
     eval_result = classifier.evaluate(input_fn=lambda: data.eval_input_fn(
         eval_input_enc, eval_input_dec, eval_target_dec, DEFINES.batch_size))
 
     print('\nEVAL set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
+    '''
+
+    with open("data_out\model.clf", "rb") as f:
+        classifier = pickle.load(f)
 
     # 테스트용 데이터 만드는 부분이다.
     # 인코딩 부분 만든다. 테스트용으로 ["가끔 궁금해"] 값을 넣어 형성된 대답과 비교를 한다.
-    predic_input_enc = data.enc_processing(test_q.append("가끔 궁금해"), char2idx)
+
+    predic_input_enc = data.enc_processing(test_q, char2idx)
     # 학습 과정이 아니므로 디코딩 입력은
     # 존재하지 않는다.(구조를 맞추기 위해 넣는다.)
     predic_input_dec = data.dec_input_processing(test_a, char2idx)
