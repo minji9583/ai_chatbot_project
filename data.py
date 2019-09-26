@@ -55,11 +55,8 @@ def prepro_noise_canceling(data):
 
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
-    data = prepro_noise_canceling(data)
-    dictionary = {}
-    for i in data:
-        dictionary.extend(i.split())
-    return dictionary
+    token_data = data.split()
+    return token_data
 
 
 # dictionary = tokenizing_data(train_q)
