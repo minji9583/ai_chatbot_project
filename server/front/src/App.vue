@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <abchat :title="'sjchat'" :button_title="'good'"></abchat>
+    <abchat></abchat>
   </div>
 </template>
 
