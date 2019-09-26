@@ -29,8 +29,9 @@ def main(self):
     # 데이터를 통한 사전 구성 한다.
     char2idx, idx2char, vocabulary_length = data.load_voc()
     # 훈련 데이터와 테스트 데이터를 가져온다.
-​
-    train_q, train_a, test_q, test_a = data.load_data('data_in/ChatBotData.csv')
+
+    train_q, train_a, test_q, test_a = data.load_data()
+
     # print('train_q', train_q)
     # print('train_a', train_a)
     # print('test_q', test_q)

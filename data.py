@@ -22,20 +22,13 @@ MARKER = [PAD, STD, END, UNK]
 
 
 # Req 1-1-1. 데이터를 읽고 트레이닝 셋과 테스트 셋으로 분리
-def load_data(filename):
-    Q, A = [], []
-    with open(filename, 'r', encoding='utf-8') as f:
-        for line in f.read().splitlines():
-            line = line.split(',')
-            Q.append(line[0])
-            A.append(line[1])
+def load_data():
+    data_df = pd.read_csv(DEFINES.data_path)
+    Q, A = list(data_df['Q']), list(data_df['A'])
     train_q, test_q, train_a, test_a = train_test_split(Q, A)
-    # print(train_q)
-    # print(test_q)
     return train_q, train_a, test_q, test_a
 
 
-# train_q, train_a, test_q, test_a = load_data('data_in/ChatBotData.csv')
 
 # Req 1-1-2. 텍스트 데이터에 정규화를 사용하여 ([~.,!?\"':;)(]) 제거
 def prepro_noise_canceling(data):
@@ -49,40 +42,29 @@ def prepro_noise_canceling(data):
     return data
 
 
-# data = prepro_noise_canceling(train_q)
-# for i in data:
-#     print(i)
 
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
-    data = prepro_noise_canceling(data)
-    dictionary = {}
-    for i in data:
-        dictionary.extend(i.split())
-    return dictionary
+    token_data = data.split()
+    return token_data
 
 
-# dictionary = tokenizing_data(train_q)
 
 # Req 1-2-1. 토큰화된 트레이닝 데이터를 인코더에 활용할 수 있도록 전 처리
 def enc_processing(value, dictionary):
-    # print(value)
-    # print(dictionary)
-
     # 인덱스 정보를 저장할 배열 초기화
     seq_input_index = []
     # 문장의 길이를 저장할 배열 초기화
     seq_len = []
     # 노이즈 캔슬
     value = prepro_noise_canceling(value)
-    # print(value)
 
     for seq in value:
 
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = []
-
-        for word in seq.split():
+        words = tokenizing_data(seq)
+        for word in words:
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
 
@@ -92,7 +74,6 @@ def enc_processing(value, dictionary):
             else:
                 seq_index.extend([UNK_INDEX])
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
-        # print(seq_index)
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
@@ -128,8 +109,8 @@ def dec_input_processing(value, dictionary):
         # 하나의 seq에 index를 저장할 배열 초기화
         # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
         seq_index = [STD_INDEX]
-        # print('seq_index', seq_index)
-        for word in seq.split():
+        words = tokenizing_data(seq)
+        for word in words:
             # print('get', dictionary.get(word))
             if dictionary.get(word) is not None:
                 seq_index.extend([dictionary.get(word)])
@@ -156,7 +137,6 @@ def dec_input_processing(value, dictionary):
     return np.array(seq_input_index)
 
 
-# print('dec', dec_input_processing(train_a, tokenizing_data(train_a)))
 
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리
 def dec_target_processing(value, dictionary):
@@ -173,19 +153,11 @@ def dec_target_processing(value, dictionary):
     for seq in value:
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = []
-        for word in seq.split():
+        words = tokenizing_data(seq)
+        for word in words:
             # print('word', word)
             if dictionary.get(word) is not None:
                 seq_index.extend([dictionary.get(word)])
-
-        # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
-        for word in seq.split():
-            # print('get', dictionary.get(word))
-            if dictionary.get(word) is not None:
-                seq_index.extend([dictionary.get(word)])
-                # seq_index에 dictionary 안의 인덱스를 extend 한다
-
             else:
                 seq_index.extend([UNK_INDEX])
                 # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
@@ -206,8 +178,6 @@ def dec_target_processing(value, dictionary):
     return np.array(seq_input_index)
 
 
-# print('dec_target_processing', dec_target_processing(train_a, tokenizing_data(train_a)))
-
 # input과 output dictionary를 만드는 함수
 def in_out_dict(input, output, target):
     features = {"input": input, "output": output}
@@ -220,9 +190,6 @@ def train_input_fn(train_input_enc, train_input_dec, train_target_dec, batch_siz
     # 각각 한 문장으로 자른다고 보면 된다.
     # train_input_enc, train_output_dec, train_target_dec
     # 3개를 각각 한문장으로 나눈다.
-    # print('data train_input_enc', train_input_enc)
-    # print('data train_input_dec', train_input_dec)
-    # print('data train_target_dec', train_target_dec)
     dataset = tf.data.Dataset.from_tensor_slices((train_input_enc, train_input_dec, train_target_dec))
     # 전체 데이터를 썩는다.
     dataset = dataset.shuffle(buffer_size=len(train_input_enc))
@@ -269,7 +236,6 @@ def eval_input_fn(eval_input_enc, eval_input_dec, eval_target_dec, batch_size):
     # make_one_shot_iterator를 통해
     # 이터레이터를 만들어 준다.
     iterator = dataset.make_one_shot_iterator()
-    print(iterator)
     # 이터레이터를 통해 다음 항목의
     # 텐서 개체를 넘겨준다.
     return iterator.get_next()
@@ -288,9 +254,6 @@ def load_voc():
         # 데이터 파일의 존재 유무를 확인한다.
 
         data_df = pd.read_csv(DEFINES.data_path)
-        # for i in data_df:
-        #     print('data_df', i)
-        # print(data_df)
 
         # 판다스의 데이터 프레임을 통해
         # 질문과 답에 대한 열을 가져 온다.
@@ -344,10 +307,8 @@ def make_voc(voc_list):
 
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
-    print('pred_next_string', value)
     answer = ''
     for i in value:
-        print('i', i['indexs'])
         for key in i['indexs']:
             if dictionary.get(key) is not None:
                 answer += dictionary.get(key)
