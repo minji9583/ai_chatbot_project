@@ -27,9 +27,11 @@ def bleu_compute(ture, val):
     return score
 
 # Req. 1-5-2. rouge score 계산 함수
-def rouge_compute(check, vlaue):
-    score = Rouge()
-    return None
+def rouge_compute(answer, pred):
+   rouge = Rouge()
+   scores = rouge.get_scores(answer, pred)
+   score1 = scores[0]['rouge-1']
+   return score1['r'], score1['p'], score1['f']
 
 # Req. 1-5-3. main 함수 구성
 def main(self):
