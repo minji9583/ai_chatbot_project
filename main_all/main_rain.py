@@ -16,9 +16,14 @@ from configs import DEFINES
 DATA_OUT_PATH = './data_out/'
 
 # Req. 1-5-1. bleu score 계산 함수
-def bleu_compute(check, vlaue):
-    score = sentence_bleu(check, vlaue, weights=(0.25, 0.25, 0.25, 0.25), SmoothingFunction=None)
-    print(score)
+def bleu_compute(ture, val):
+    smooth = SmoothingFunction().method2
+    score = sentence_bleu(
+            [ture.split()],
+            val.split(),
+            weights=(0.25, 0.25, 0.25, 0.25),
+            smoothing_function=smooth)
+
     return score
 
 # Req. 1-5-2. rouge score 계산 함수
