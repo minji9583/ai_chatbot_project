@@ -78,8 +78,8 @@ def enc_processing(value, dictionary):
 
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = []
-
-        for word in seq.split():
+        words = tokenizing_data(seq)
+        for word in words:
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
 
@@ -126,7 +126,8 @@ def dec_input_processing(value, dictionary):
         # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
         seq_index = [STD_INDEX]
         # print('seq_index', seq_index)
-        for word in seq.split():
+        words = tokenizing_data(seq)
+        for word in words:
             # print('get', dictionary.get(word))
             if dictionary.get(word) is not None:
                 seq_index.extend([dictionary.get(word)])
@@ -170,7 +171,8 @@ def dec_target_processing(value, dictionary):
     for seq in value:
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index = []
-        for word in seq.split():
+        words = tokenizing_data(seq)
+        for word in words:
             # print('word', word)
             if dictionary.get(word) is not None:
                 seq_index.extend([dictionary.get(word)])
