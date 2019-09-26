@@ -14,16 +14,27 @@ from configs import DEFINES
 
 DATA_OUT_PATH = './data_out/'
 
+
 # Req. 1-5-1. bleu score 계산 함수
-def bleu_compute(references, hypothesis):
-    references = [references.split()]
-    # print(references)
-    return sentence_bleu(references, hypothesis, smoothing_function=None)
+
+def bleu_compute(ture, val):
+    smooth = SmoothingFunction().method2
+    score = sentence_bleu(
+        [ture.split()],
+        val.split(),
+        weights=(0.25, 0.25, 0.25, 0.25),
+        smoothing_function=smooth)
+
+    return score
+
 
 # Req. 1-5-2. rouge score 계산 함수
-def rouge_compute():
-    
-    return None
+def rouge_compute(answer, pred):
+    rouge = Rouge()
+    scores = rouge.get_scores(answer, pred)
+    score1 = scores[0]['rouge-1']
+    return score1['r'], score1['p'], score1['f']
+
 
 # Req. 1-5-3. main 함수 구성
 def main(self):
@@ -33,7 +44,7 @@ def main(self):
     char2idx, idx2char, vocabulary_length = data.load_voc()
     # 훈련 데이터와 테스트 데이터를 가져온다.
 
-    train_q, train_a, test_q, test_a = data.load_data('data_in/ChatBotData.csv')
+    train_q, train_a, test_q, test_a = data.load_data()
     # print('train_q', train_q)
     # print('train_a', train_a)
     # print('test_q', test_q)
@@ -93,11 +104,10 @@ def main(self):
         eval_input_enc, eval_input_dec, eval_target_dec, DEFINES.batch_size))
 
     print('\nEVAL set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
-    
+
     # 모델 저장
     with open("model.clf", "wb") as f:
         pickle.dump(classifier, f)
-
 
     # 테스트용 데이터 만드는 부분이다.
     # 인코딩 부분 만든다. 테스트용으로 ["가끔 궁금해"] 값을 넣어 형성된 대답과 비교를 한다.
@@ -123,9 +133,10 @@ def main(self):
 
     # 예측한 값을 인지 할 수 있도록
     # 텍스트로 변경하는 부분이다.
+
     print("answer: ", answer)
-    print("Bleu score: ", bleu_compute("그 사람도 그럴 거예요.", answer))
-    # print("Rouge score: ", rouge_compute("그 사람도 그럴 거예요.", answer))
+    print("Bleu score: ", bleu_compute("안녕하세요", answer))
+    print("Rouge score: ", rouge_compute("안녕하세요", answer))
 
 
 if __name__ == '__main__':
