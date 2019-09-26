@@ -158,15 +158,6 @@ def dec_target_processing(value, dictionary):
             # print('word', word)
             if dictionary.get(word) is not None:
                 seq_index.extend([dictionary.get(word)])
-
-        # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
-        # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
-        for word in seq.split():
-            # print('get', dictionary.get(word))
-            if dictionary.get(word) is not None:
-                seq_index.extend([dictionary.get(word)])
-                # seq_index에 dictionary 안의 인덱스를 extend 한다
-
             else:
                 seq_index.extend([UNK_INDEX])
                 # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
