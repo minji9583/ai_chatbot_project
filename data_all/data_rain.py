@@ -241,16 +241,18 @@ def load_voc():
         # 판다스의 데이터 프레임을 통해
         # 질문과 답에 대한 열을 가져 온다.
         question, answer = data_df['Q'], data_df['A']
-        data = []
+        data_set = []
         # 질문과 답변을 extend을
         # 통해서 구조가 없는 배열로 만든다.
-        data.extend(question)
-        data.extend(answer)
+        data_set.extend(question)
+        data_set.extend(answer)
 
         # data를 토크나이즈하여 words에 저장한다.
-        words = tokenizing_data(data)
-
+        words = []
+        for data in data_set:
+            words.extend(tokenizing_data(data))
         # 중복되는 단어(토큰)를 제거
+        print(words)
         words = list(set(words))
 
         # 데이터 없는 내용중에 MARKER 추가
