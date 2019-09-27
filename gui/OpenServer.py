@@ -66,10 +66,10 @@ class FlaskThread(QThread):
         self.application = application
 
     def __del__(self):
+        print("서버죽어욧!!!")
         self.wait()
 
     def run(self):
-        print("실행중이양")
         self.application.run(port=5000)
 
 
@@ -175,7 +175,7 @@ class MyApp(QWidget):
         self.onoffBtn.setText("시작하기")
         self.statusLabel.setText("　SERVER CLOSED　　　　　　　　")
         self.onoffBtn.clicked.connect(self.ServerOn)
-        
+        self.webapp.terminate()
         
     def showFileDialog(self):
         fname = QFileDialog.getOpenFileName(self)
