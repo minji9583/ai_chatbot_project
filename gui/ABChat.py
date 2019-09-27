@@ -27,7 +27,7 @@ class ABChat(QWidget):
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.titlebar = MainTitleBar(self)
         self.titlebar.setObjectName("windowTitle")
-        self.titlebar.backbtn.clicked.connect(self.thisistest)
+        self.titlebar.backbtn.clicked.connect(self.initMain)
 
         self.vbox = QVBoxLayout()
         self.containerbox = QVBoxLayout()
@@ -35,13 +35,10 @@ class ABChat(QWidget):
         self.containerbox.addLayout(self.vbox)
         self.setLayout(self.containerbox)
 
-    def thisistest(self):
-        print("this is test")
-
 
     def initMain(self):
         self.delPrevious()
-        self.titlebar.backbtn.setParent(None)
+        self.titlebar.backbtn.hide()
 
         pixmap = QPixmap("./img/ABChat.png")
         logo = QLabel()
@@ -72,15 +69,18 @@ class ABChat(QWidget):
         self.move(qr.topLeft())
 
     def delPrevious(self):
+        print("======= this is delPrevious =========")
         # 이전이 어떤 창이였든, 공통으로 쓰고있는 vbox의 아래에 있는 모든 위젯을 떼어냄
         for i in reversed(range(self.vbox.count())):
+            print(self.vbox.itemAt(i).widget())
             if self.vbox.itemAt(i).widget() != None:
-                # print(self.vbox.itemAt(i).widget())ㄴ
-                self.vbox.itemAt(i).widget().setParent(None)
+                #self.vbox.itemAt(i).widget().setParent(None)
+                #self.vbox.itemAt(i).widget().hide()
+                self.vbox.itemAt(i).widget().deleteLater()
 
     def initLearn(self):
         self.delPrevious()
-
+        self.titlebar.backbtn.show()
 
         # 1. 선택
         h1box = QHBoxLayout()
@@ -146,7 +146,7 @@ class ABChat(QWidget):
 
     def initTest(self):
         self.delPrevious()
-        self.titlebar.layout.addWi
+        self.titlebar.backbtn.show()
 
         # 학습모델 조절
         box1 = QGroupBox("학습 모델 선택")
