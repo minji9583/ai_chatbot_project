@@ -40,34 +40,13 @@
 <script>
 import axios from "axios";
 
-const BASE_URL = "http://13.125.17.8:5000";
-let api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    withCredentials: false
-  }
-});
-
-let get_result = async function(message) {
-  let result = null;
-  await api
-    .request({
-      method: "GET",
-      url: `/${message}`,
-      mode: "no-cors"
-    })
-    .then(res => {
-      result = res;
-    });
-  return result;
-};
-
 export default {
   name: "vue-abchat",
   props: {
+    base_url: {
+      type: String,
+      required: true
+    },
     width: {
       type: Number,
       default: 300
@@ -75,10 +54,6 @@ export default {
     height: {
       type: Number,
       default: 400
-    },
-    color: {
-      type: String,
-      default: "light"
     },
     position: {
       type: String,
@@ -88,7 +63,13 @@ export default {
       type: String,
       default: "ABChat"
     },
-    button_title: { type: String, default: "chat" }
+    button_title: {
+      type: String,
+      default: "chat"
+    },
+    colors: {
+      type: Object
+    }
   },
   data() {
     return {
@@ -96,10 +77,32 @@ export default {
       my_message: "",
       your_message: "",
       raw_data: null,
-      hideflag: true
+      hideflag: true,
+      api: axios.create({
+        baseURL: this.base_url,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          withCredentials: false
+        }
+      })
     };
   },
   methods: {
+    async get_result(message) {
+      let result = null;
+      await this.api
+        .request({
+          method: "GET",
+          url: `/${message}`,
+          mode: "no-cors"
+        })
+        .then(res => {
+          result = res;
+        });
+      return result;
+    },
     async getChatData() {
       if (this.my_message == "") {
         return;
@@ -114,12 +117,12 @@ export default {
         .scrollHeight;
 
       document.getElementsByClassName("chatlayout")[0].scrollTo(0, height);
-      const res = await get_result(my_message.data);
-      let ai_message = {}
+      const res = await this.get_result(my_message.data);
+      let ai_message = {};
       if (res.status != 200) {
         ai_message = {
           type: "ai",
-          data: '서버가 이상해요'
+          data: "서버가 이상해요"
         };
       } else {
         ai_message = {
@@ -139,10 +142,18 @@ export default {
         this.height.toString() + "px";
       document.getElementById("complayout").style.width =
         this.width.toString() + "px";
+    },
+    checkColor() {
+      if (this.colors) {
+        console.log("has color");
+      } else {
+        console.log("no color");
+      }
     }
   },
   mounted() {
     this.setCompSize();
+    this.checkColor();
   }
 };
 </script>
@@ -178,11 +189,11 @@ export default {
 
 .hidebtn {
   position: fixed;
-  padding: 0.1em 0.3em;
   bottom: 15px;
   right: 15px;
-  min-width: 50px;
-  min-height: 50px;
+  padding: 0.1em 0.3em;
+  width: 40px;
+  height: 40px;
   background-color: rgb(240, 61, 37);
   border-radius: 17px;
   color: white;
@@ -191,6 +202,19 @@ export default {
   justify-content: center;
   align-items: center;
   box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.788);
+}
+
+[top] .hidebtn {
+  top: 15px;
+}
+[bottom] .hidebtn {
+  bottom: 15px;
+}
+[right] .hidebtn {
+  right: 15px;
+}
+[left] .hidebtn {
+  left: 15px;
 }
 
 .hidebtn:hover {
@@ -208,6 +232,20 @@ export default {
   border-radius: 10px;
   box-shadow: 1px 1px 8px 1px rgba(0, 0, 0, 0.788);
 }
+
+[top] #complayout {
+  top: 30px;
+}
+[bottom] #complayout {
+  bottom: 30px;
+}
+[right] #complayout{
+  right: 30px;
+}
+[left] #complayout{
+  left: 30px;
+}
+
 .headerlayout {
   text-align: center;
   border-top-left-radius: 10px;
