@@ -45,7 +45,6 @@ def prepro_noise_canceling(data):
 
 # Req 1-1-3. 텍스트 데이터에 토크나이징
 def tokenizing_data(data):
-    print(data)
     token_data = data.split()
     return token_data
 
@@ -163,8 +162,8 @@ def dec_target_processing(value, dictionary):
             # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
 
             else:
-                seq_index.extend([UNK_INDEX])
                 # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
+                seq_index.extend([UNK_INDEX])
         # print(seq_index)
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
@@ -274,6 +273,7 @@ def load_voc():
             words.extend(tokenizing_data(word))
         # 중복되는 단어(토큰)를 제거
         words = list(set(words))
+        print('words', words)
         # print(words)
         # 데이터 없는 내용중에 MARKER 추가
         words[:0] = MARKER
@@ -287,9 +287,7 @@ def load_voc():
     # 사전 파일에서 단어(토큰)을 가져와 voc_list에 저장
     with open(DEFINES.vocabulary_path, 'r', encoding='utf-8') as voc_file:
         for line in voc_file.readlines():
-            # print('line', line)
-            voc_list.append(line.split('\n')[0])
-    # print(voc_list)
+            voc_list.extend(line.split())
 
     # make() 함수를 사용하여 dictionary 형태의 char2idx, idx2char 저장
     char2idx, idx2char = make_voc(voc_list)
@@ -299,22 +297,25 @@ def load_voc():
 
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
-    char2idx = {}
-    idx2char = {}
-    for voca in voc_list:
-        if not char2idx.get(voca):
-            char2idx[voca] = len(char2idx) + 1
-            idx2char[len(char2idx)] = voca
-    # print('char2idx', char2idx)
-    # print('idx2char', idx2char)
+    char2idx, idx2char = {}, {}
+    for word in voc_list:
+        if char2idx.get(word) == None:
+            char2idx[word] = len(char2idx)
+            idx2char[len(idx2char)] = word
+
+    print('char2idx', char2idx)
+    print('idx2char', idx2char)
     return char2idx, idx2char
 
 
 # Req 1-3-3. 예측용 단어 인덱스를 문장으로 변환
 def pred_next_string(value, dictionary):
     answer = ''
+    print('dictionary', dictionary)
     for i in value:
+        print('indexs', i['indexs'])
         for key in i['indexs']:
+            print('keyy', key, dictionary.get(key))
             if dictionary.get(key) is not None:
                 answer += dictionary.get(key)
                 answer += ' '
