@@ -64,16 +64,18 @@ class FlaskThread(QThread):
     def __init__(self, application):
         QThread.__init__(self)
         self.application = application
+        self.runStatus = False;
 
     def __del__(self):
-        print("서버죽어욧!!!")
         self.wait()
-
+        
+    def stop(self):
+        self.runStatus = True;
+        
     def run(self):
         self.application.run(port=5000)
+        
 
-
-    
 class MyApp(QWidget):
     css = """
         QWidget {
@@ -132,18 +134,13 @@ class MyApp(QWidget):
         #컨텐트 박스에 위젯들 붙이기
 
         self.contentBox = QtWidgets.QHBoxLayout(self)
-##        self.contentBox.addWidget(self.selectFileLb,0,0)
-##        self.contentBox.addWidget(self.sFile,0,1)
-##        self.contentBox.addWidget(self.selectFileBtn,0,2)
-##        self.contentBox.addWidget(self.blankHeight,1,2)
-##        self.contentBox.addWidget(self.gkrBtn,2,2)
         self.container.setAlignment(Qt.AlignTop)
 
-        
         self.statusPNG = QLabel(self)
         self.pixmap = QtGui.QPixmap("img/off.png")
         self.statusPNG.resize(30,30)
         self.statusPNG.setPixmap(self.pixmap.scaled(self.statusPNG.size(), QtCore.Qt.IgnoreAspectRatio))
+
         self.statusLabel = QLabel("　SERVER CLOSED　　　　　　　　")
         self.onoffBtn = QPushButton("서버 실행", self)
         self.onoffBtn.clicked.connect(self.ServerOn)
@@ -155,7 +152,6 @@ class MyApp(QWidget):
         self.contentBox.addWidget(self.onoffBtn)
         self.contentBox.setContentsMargins(20, 0, 20, 0) # 좌 상 우 하
         self.container.addLayout(self.contentBox)
-
         self.center()
         self.show()
 
@@ -163,19 +159,18 @@ class MyApp(QWidget):
         self.pixmap = QtGui.QPixmap("img/on.png")
         self.statusPNG.setPixmap(self.pixmap.scaled(self.statusPNG.size(), QtCore.Qt.IgnoreAspectRatio))
         self.onoffBtn.setText("중지하기")
-        #self.statusLabel.setText("　running...　　　　　　")
+        self.statusLabel.setText("　running...　　　　　　")
         self.onoffBtn.clicked.connect(self.ServerOff)        
         self.webapp.start()
        
         
     def ServerOff(self):
-        #self.shutdown_server()
         self.pixmap = QtGui.QPixmap("img/off.png")
         self.statusPNG.setPixmap(self.pixmap.scaled(self.statusPNG.size(), QtCore.Qt.IgnoreAspectRatio))
         self.onoffBtn.setText("시작하기")
-        self.statusLabel.setText("　SERVER CLOSED　　　　　　　　")
+        self.statusLabel.setText("　closed　　　　　　　　")
         self.onoffBtn.clicked.connect(self.ServerOn)
-        self.webapp.terminate()
+        self.webapp.stop()
         
     def showFileDialog(self):
         fname = QFileDialog.getOpenFileName(self)
