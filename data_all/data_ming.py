@@ -297,8 +297,11 @@ def load_voc():
 
 # Req 1-3-2. 사전 리스트를 받아 인덱스와 토큰의 dictionary를 생성
 def make_voc(voc_list):
-    char2idx = {char: idx for idx, char in enumerate(voc_list)}
-    idx2char = {idx: char for idx, char in enumerate(voc_list)}
+    char2idx, idx2char = {}, {}
+    for word in voc_list:
+        if char2idx.get(word) == None:
+            char2idx[word] = len(char2idx)
+            idx2char[len(idx2char)] = word
 
     print('char2idx', char2idx)
     print('idx2char', idx2char)
