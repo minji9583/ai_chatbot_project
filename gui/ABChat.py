@@ -35,7 +35,6 @@ class ABChat(QWidget):
         self.containerbox.addLayout(self.vbox)
         self.setLayout(self.containerbox)
 
-
     def initMain(self):
         self.delPrevious()
         self.titlebar.backbtn.hide()
@@ -59,6 +58,7 @@ class ABChat(QWidget):
 
         self.setWindowTitle('ABChat')
         self.resize(600, 400)
+        self.setFixedSize(600,400)
         self.show()
         self.center()
 
@@ -69,13 +69,10 @@ class ABChat(QWidget):
         self.move(qr.topLeft())
 
     def delPrevious(self):
-        print("======= this is delPrevious =========")
         # 이전이 어떤 창이였든, 공통으로 쓰고있는 vbox의 아래에 있는 모든 위젯을 떼어냄
         for i in reversed(range(self.vbox.count())):
-            print(self.vbox.itemAt(i).widget())
+            # print(self.vbox.itemAt(i).widget())
             if self.vbox.itemAt(i).widget() != None:
-                #self.vbox.itemAt(i).widget().setParent(None)
-                #self.vbox.itemAt(i).widget().hide()
                 self.vbox.itemAt(i).widget().deleteLater()
 
     def initLearn(self):
@@ -133,15 +130,25 @@ class ABChat(QWidget):
 
         self.pbar.setValue(20)
 
+        f1 = QFrame()
+        f2 = QFrame()
+
+        f1.setLayout(h1box)
+        f2.setLayout(g2box)
+
         # 통합
         self.vbox.addStretch(2)
-        self.vbox.addLayout(h1box)
+        #self.vbox.addLayout(h1box)
+        self.vbox.addWidget(f1)
         self.vbox.addStretch(1)
-        self.vbox.addLayout(g2box)
+        #self.vbox.addLayout(g2box)
+        self.vbox.addWidget(f2)
         self.vbox.addStretch(2)
 
         self.setWindowTitle('학습하기')
         self.resize(600, 300)
+        self.setFixedSize(600,300)
+        self.show()
         self.center()
 
     def initTest(self):
@@ -215,6 +222,11 @@ class ABChat(QWidget):
         self.resize(600, 860)
         self.setFixedSize(600, 860)
         self.center()
+
+    def showFileDialog(self):
+        fname = QFileDialog.getOpenFileName(self)
+        print("select : " + fname[0])
+        self.sData.setText(fname[0])
 
 class MainTitleBar(QtWidgets.QWidget):
     """제목 표시줄 위젯"""
