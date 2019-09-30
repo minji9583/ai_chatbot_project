@@ -66,9 +66,6 @@ export default {
     button_title: {
       type: String,
       default: "chat"
-    },
-    colors: {
-      type: Object
     }
   },
   data() {
@@ -142,13 +139,6 @@ export default {
         this.height.toString() + "px";
       document.getElementById("complayout").style.width =
         this.width.toString() + "px";
-    },
-    checkColor() {
-      if (this.colors) {
-        console.log("has color");
-      } else {
-        console.log("no color");
-      }
     }
   },
   mounted() {
