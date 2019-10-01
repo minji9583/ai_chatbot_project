@@ -78,10 +78,10 @@ def enc_processing(value, dictionary):
         for word in seq.split():
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
-                seq_index.extend([dictionary[word]])
+                seq_index.extend([int(dictionary[word])])
             else:
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
-                seq_index.extend([UNK])
+                seq_index.extend([UNK_INDEX])
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
@@ -91,8 +91,7 @@ def enc_processing(value, dictionary):
         seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [PAD]
-
+        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [PAD_INDEX]
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
 
@@ -112,15 +111,15 @@ def dec_input_processing(value, dictionary):
         # 하나의 seq에 index를 저장할 배열 초기화
         seq_index =[]
         # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
-        seq_index.extend([STD])
+        seq_index.extend([STD_INDEX])
 
         for word in seq.split():
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
-                seq_index.extend([dictionary.get(word)])
+                seq_index.extend([int(dictionary[word])])
             else:
                 # dictionary에 존재 하지 않는 다면 seq_index에 UNK 값을 extend 한다
-                seq_index.extend([UNK])
+                seq_index.extend([UNK_INDEX])
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
@@ -130,7 +129,7 @@ def dec_input_processing(value, dictionary):
         seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [PAD]
+        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [PAD_INDEX]
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
@@ -147,7 +146,6 @@ def dec_target_processing(value, dictionary):
     seq_len = []
     # 노이즈 캔슬
     value = prepro_noise_canceling(value)
-
     for seq in value:
 
         # 하나의 seq에 index를 저장할 배열 초기화
@@ -156,22 +154,22 @@ def dec_target_processing(value, dictionary):
         for word in seq.split():
             if dictionary.get(word) is not None:
                 # seq_index에 dictionary 안의 인덱스를 extend 한다
-                seq_index.extend([dictionary[word]])
+                seq_index.extend([int(dictionary[word])])
             else:
                 # dictionary에 존재 하지 않는 다면 UNK 값을 extend 한다
-                seq_index.extend([UNK])
+                seq_index.extend([UNK_INDEX])
 
         # 문장 제한 길이보다 길어질 경우 뒤에 토큰을 제거
         if len(seq_index) > DEFINES.max_sequence_length:
             seq_index = seq_index[:DEFINES.max_sequence_length-1]
         # END 토큰을 추가 (DEFINES.max_sequence_length 길이를 맞춰서 추가)
-        seq_index.extend([END])
+        seq_index.extend([END_INDEX])
 
         # seq의 길이를 저장
         seq_len.append(len(seq_index))
 
         # DEFINES.max_sequence_length 길이보다 작은 경우 PAD 값을 추가 (padding)
-        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [PAD]
+        seq_index += (DEFINES.max_sequence_length - len(seq_index)) * [PAD_INDEX]
 
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
@@ -210,6 +208,7 @@ def train_input_fn(train_input_enc, train_input_dec, train_target_dec, batch_siz
     # 이터레이터를 통해 다음 항목의 텐서
     # 개체를 넘겨준다.
     return iterator.get_next()
+
 
 
 # 평가에 들어가 배치 데이터를 만드는 함수
