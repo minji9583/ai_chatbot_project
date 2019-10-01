@@ -97,9 +97,8 @@ def main(self):
         })
 
     # 학습 실행
-    a = classifier.train(input_fn=lambda: data.train_input_fn(
+    classifier.train(input_fn=lambda: data.train_input_fn(
         train_input_enc, train_input_dec, train_target_dec, DEFINES.batch_size), steps=DEFINES.train_steps)
-    print('a', a)
     eval_result = classifier.evaluate(input_fn=lambda: data.eval_input_fn(
         eval_input_enc, eval_input_dec, eval_target_dec, DEFINES.batch_size))
 
