@@ -173,7 +173,7 @@ def pred2string(value, dictionary):
             # 딕셔너리에 있는 단어로 변경해서 배열에 담는다.
             sentence_string = [dictionary[index] for index in v['indexs']]
     
-    print(sentence_string)
+    # print(sentence_string)
     answer = ""
     # 패딩값도 담겨 있으므로 패딩은 모두 스페이스 처리 한다.
     for word in sentence_string:
@@ -181,7 +181,7 @@ def pred2string(value, dictionary):
             answer += word
             answer += " "
     # 결과를 출력한다.
-    print(answer)
+    # print(answer)
     return answer
 
 
