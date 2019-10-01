@@ -20,7 +20,8 @@
             <span>{{ message.data }}</span>
           </div>
           <div class="arrow_box2 box_font" v-else>
-            <span>{{ message.data }}</span>
+            <span v-if="message.loadflag" class="loader"></span>
+            <span v-else>{{ message.data }}</span>
           </div>
         </div>
       </div>
@@ -66,6 +67,9 @@ export default {
     button_title: {
       type: String,
       default: "chat"
+    },
+    colors: {
+      type: Object
     }
   },
   data() {
@@ -83,7 +87,9 @@ export default {
           "Access-Control-Allow-Origin": "*",
           withCredentials: false
         }
-      })
+      }),
+      loadflag: false,
+      loadidx: null
     };
   },
   methods: {
@@ -97,6 +103,9 @@ export default {
         })
         .then(res => {
           result = res;
+        })
+        .catch(function(error) {
+          result = error;
         });
       return result;
     },
@@ -104,33 +113,69 @@ export default {
       if (this.my_message == "") {
         return;
       }
+      if (this.loadflag) {
+        return;
+      }
+      document.getElementsByClassName("abutton")[0].textContent = await 'wait'
+      await document.getElementsByClassName("abutton")[0].classList.add("bbutton");
+      await document.getElementsByClassName("abutton")[0].classList.remove("abutton");
+      this.loadflag = true;
+      this.loadidx = this.message_list.length;
       let my_message = {
         type: "user",
-        data: this.my_message
+        data: this.my_message.replace(/[\\/]/g, ""),
+        idx: this.loadidx
       };
       this.my_message = "";
       await this.message_list.push(my_message);
       let height = document.getElementsByClassName("chatlayout")[0]
         .scrollHeight;
 
-      document.getElementsByClassName("chatlayout")[0].scrollTo(0, height);
-      const res = await this.get_result(my_message.data);
+      await document
+        .getElementsByClassName("chatlayout")[0]
+        .scrollTo(0, height);
+
+      await this.message_list.push({
+        type: "ai",
+        data: "loading",
+        loadflag: true,
+        idx: this.loadidx + 1
+      });
+
+      await document
+        .getElementsByClassName("chatlayout")[0]
+        .scrollTo(0, height);
+
       let ai_message = {};
-      if (res.status != 200) {
+      const res = await this.get_result(my_message.data);
+      if (res.status == 200) {
         ai_message = {
           type: "ai",
-          data: "서버가 이상해요"
+          data: res.data.result,
+          loadflag: false,
+
+          idx: this.loadidx + 1
         };
       } else {
         ai_message = {
           type: "ai",
-          data: res.data.result
+          data: "서버가 이상해요",
+          loadflag: false,
+          idx: this.loadidx + 1
         };
       }
-      await this.message_list.push(ai_message);
 
-      height = document.getElementsByClassName("chatlayout")[0].scrollHeight;
-      document.getElementsByClassName("chatlayout")[0].scrollTo(0, height);
+      this.message_list.splice(this.loadidx + 1, 1, ai_message);
+      document.getElementsByClassName("bbutton")[0].textContent = await 'send'
+      document.getElementsByClassName("bbutton")[0].classList.add("abutton");
+      document.getElementsByClassName("bbutton")[0].classList.remove("bbutton");
+      this.loadflag = false;
+
+      height = await document.getElementsByClassName("chatlayout")[0]
+        .scrollHeight;
+      await document
+        .getElementsByClassName("chatlayout")[0]
+        .scrollTo(0, height);
 
       this.$refs.chat.focus();
     },
@@ -143,7 +188,6 @@ export default {
   },
   mounted() {
     this.setCompSize();
-    this.checkColor();
   }
 };
 </script>
@@ -229,10 +273,10 @@ export default {
 [bottom] #complayout {
   bottom: 30px;
 }
-[right] #complayout{
+[right] #complayout {
   right: 30px;
 }
-[left] #complayout{
+[left] #complayout {
   left: 30px;
 }
 
@@ -287,9 +331,20 @@ export default {
 }
 
 .abutton {
+  width: 65px;
   padding: 0.5em 0.5em;
   background: rgb(202, 207, 226);
   color: rgb(80, 77, 77);
+  font-size: 1em;
+  font-weight: 700;
+  border: 0px white;
+  border-radius: 0.5em;
+}
+.bbutton {
+  width: 65px;
+  padding: 0.5em 0.5em;
+  background: rgb(233, 96, 78);
+  color: rgb(255, 255, 255);
   font-size: 1em;
   font-weight: 700;
   border: 0px white;
@@ -380,5 +435,63 @@ export default {
   top: 15px;
   border-width: 7px;
   margin-top: -7px;
+}
+.loader,
+.loader:before,
+.loader:after {
+  border-radius: 50%;
+  width: 0.9em;
+  height: 0.9em;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation: load7 1.8s infinite ease-in-out;
+  animation: load7 1.8s infinite ease-in-out;
+}
+.loader {
+  color: #5684c9;
+  font-size: 1px;
+  margin: 5px auto;
+  margin-bottom: 45px;
+  position: relative;
+  text-indent: -9999em;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+.loader:before,
+.loader:after {
+  content: "";
+  position: absolute;
+  top: 0;
+}
+.loader:before {
+  left: -3em;
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+.loader:after {
+  left: 3em;
+}
+@-webkit-keyframes load7 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 2.5em 0 -1.3em;
+  }
+  40% {
+    box-shadow: 0 2.5em 0 0;
+  }
+}
+@keyframes load7 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 2.5em 0 -1.3em;
+  }
+  40% {
+    box-shadow: 0 2.5em 0 0;
+  }
 }
 </style>
