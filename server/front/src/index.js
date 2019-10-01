@@ -1,8 +1,7 @@
-import Vue from 'vue';
 import component from './components/vue-abchat.vue';
 
 
-export function install(Vue) {
+function install(Vue) {
   if (install.installed) return;
   install.installed = true;
   Vue.component('abchat', component);
@@ -22,6 +21,8 @@ if (typeof window !== 'undefined') {
 if (GlobalVue) {
   GlobalVue.use(plugin);
 }
+
+component.install = install
 
 // To allow use as module (npm/webpack/etc.) export component
 export default component;
