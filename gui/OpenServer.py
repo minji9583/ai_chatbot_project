@@ -16,6 +16,13 @@ from flask import Flask
 from flask import request
 from flask_restful import Resource, Api
 
+class Data(Resource):
+    def get(self, text):
+        ans = classify(text)
+        return {'result': ans}
+
+
+
 def shutdown_server(self):
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
@@ -51,21 +58,24 @@ def classify(self,text):
         return "부정"
 
 
-class Data(Resource):
-    def get(self, text):
-        ans = classify(text)
-        return {'result': ans}
-
 
     
-class Thread(QThread):
+class FlaskThread(QThread):
+    def __init__(self, application):
+        QThread.__init__(self)
+        self.application = application
+        self.runStatus = False;
+
+    def __del__(self):
+        self.wait()
+        
+    def stop(self):
+        self.runStatus = True;
+        
     def run(self):
-        print("run!!!!!!!!1")
+        self.application.run(port=5000)
+        
 
-###
-
-
-    
 class MyApp(QWidget):
     css = """
         QWidget {
@@ -91,20 +101,16 @@ class MyApp(QWidget):
 
     def __init__(self):
         super().__init__()
-        QThread.__init__(self)
         self.resize(300, 150)
         self.setFixedSize(300, 150)
+        self.webapp = FlaskThread(Flaskapp)
         
         self.container = QtWidgets.QVBoxLayout(self)
         self.container.setContentsMargins(1, 1, 1, 1)
         
         self.setLayout(self.container)
         self.initUI()
-        self.th = Thread()
-        self.th.start()
-        self.app = Flask(__name__)
-        self.api = Api(self.app)
-        self.api.add_resource(Data, '/<string:text>')
+
 
         with open('model.clf', 'rb') as f:
             model = pickle.load(f)
@@ -128,18 +134,13 @@ class MyApp(QWidget):
         #컨텐트 박스에 위젯들 붙이기
 
         self.contentBox = QtWidgets.QHBoxLayout(self)
-##        self.contentBox.addWidget(self.selectFileLb,0,0)
-##        self.contentBox.addWidget(self.sFile,0,1)
-##        self.contentBox.addWidget(self.selectFileBtn,0,2)
-##        self.contentBox.addWidget(self.blankHeight,1,2)
-##        self.contentBox.addWidget(self.gkrBtn,2,2)
         self.container.setAlignment(Qt.AlignTop)
 
-        
         self.statusPNG = QLabel(self)
         self.pixmap = QtGui.QPixmap("img/off.png")
         self.statusPNG.resize(30,30)
         self.statusPNG.setPixmap(self.pixmap.scaled(self.statusPNG.size(), QtCore.Qt.IgnoreAspectRatio))
+
         self.statusLabel = QLabel("　SERVER CLOSED　　　　　　　　")
         self.onoffBtn = QPushButton("서버 실행", self)
         self.onoffBtn.clicked.connect(self.ServerOn)
@@ -151,28 +152,25 @@ class MyApp(QWidget):
         self.contentBox.addWidget(self.onoffBtn)
         self.contentBox.setContentsMargins(20, 0, 20, 0) # 좌 상 우 하
         self.container.addLayout(self.contentBox)
-
         self.center()
         self.show()
 
     def ServerOn(self):
-        
         self.pixmap = QtGui.QPixmap("img/on.png")
         self.statusPNG.setPixmap(self.pixmap.scaled(self.statusPNG.size(), QtCore.Qt.IgnoreAspectRatio))
         self.onoffBtn.setText("중지하기")
         self.statusLabel.setText("　running...　　　　　　")
         self.onoffBtn.clicked.connect(self.ServerOff)        
-        self.th.run()
-        
+        self.webapp.start()
+       
         
     def ServerOff(self):
-        self.shutdown_server()
         self.pixmap = QtGui.QPixmap("img/off.png")
         self.statusPNG.setPixmap(self.pixmap.scaled(self.statusPNG.size(), QtCore.Qt.IgnoreAspectRatio))
         self.onoffBtn.setText("시작하기")
-        self.statusLabel.setText("　SERVER CLOSED　　　　　　　　")
+        self.statusLabel.setText("　closed　　　　　　　　")
         self.onoffBtn.clicked.connect(self.ServerOn)
-        
+        self.webapp.stop()
         
     def showFileDialog(self):
         fname = QFileDialog.getOpenFileName(self)
@@ -283,6 +281,10 @@ class MainTitleBar(QtWidgets.QWidget):
     '''
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    qtapp = QApplication(sys.argv)
+    Flaskapp = Flask(__name__)
+    api = Api(Flaskapp)
+    api.add_resource(Data, '/<string:text>')
+    webapp = FlaskThread(Flaskapp)
     ex = MyApp()
-    sys.exit(app.exec_())
+    sys.exit(qtapp.exec_())

@@ -123,7 +123,6 @@ class MyApp(QWidget):
             return "부정"
         
 
-    
     def initUI(self): 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint) #프레임을 없애고
         #self.setStyleSheet(self.css) # css를 적용함
