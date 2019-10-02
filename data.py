@@ -36,6 +36,9 @@ def load_data():
     # skleran에서 지원하는 함수를 통해서 학습 셋과 
     # 테스트 셋을 나눈다.
     train_input, eval_input, train_label, eval_label = train_test_split(question, answer, test_size=0.33, random_state=42)
+    # 원본 데이터 모두를 학습시키기 위해서는 아래 두 줄의 주석을 해제한다.
+    # train_input = question
+    # train_label = answer
     # 그 값을 리턴한다.
     return train_input, train_label, eval_input, eval_label
 

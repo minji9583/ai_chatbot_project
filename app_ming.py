@@ -1,6 +1,7 @@
 import data
 import model as ml
 import tensorflow as tf
+import predict as pred
 import sqlite3
 import os
 
@@ -16,8 +17,8 @@ from slackeventsapi import SlackEventAdapter
 
 
 # slack 연동 정보 입력 부분
-SLACK_TOKEN = 'xoxb-718907786578-720177174562-1qx9BjbVbLkrIB9yfikj8fVr'
-SLACK_SIGNING_SECRET = 'fa3d6193e36d26163abc90a4507ceec8'
+SLACK_TOKEN = os.environ['SLACK_TOKEN']
+SLACK_SIGNING_SECRET = os.environ['SLACK_SIGNING_SECRET']
 
 app = Flask(__name__)
 
@@ -28,18 +29,27 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 # Req. 2-2-1 대답 예측 함수 구현
-def predict(sentence):
+def predict(text):
+    print('app predict text', text)
+    return pred.predict_answer(text)
 
-    return sentence
 
 # Req 2-2-2. app.db 를 연동하여 웹에서 주고받는 데이터를 DB로 저장
-
+    
 
 # 챗봇이 멘션을 받았을 경우
 @slack_events_adaptor.on("app_mention")
 def app_mentioned(event_data):
     channel = event_data["event"]["channel"]
-    text = event_data["event"]["text"]
+    text = event_data["event"]["text"].split('>')[1]
+
+    keywords = predict(text)
+    slack_web_client.chat_postMessage(
+        channel=channel,
+        text=keywords
+    )
+
+
 
 
 @app.route("/", methods=["GET"])
