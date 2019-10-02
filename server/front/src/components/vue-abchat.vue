@@ -1,11 +1,21 @@
 <template>
   <div>
+    <div v-if="dialogue" class="modal">
+      <div class="modalcontent">
+        <span class="modaltitle">안내</span>
+        <span class="modaltext">답변이 혹시 마음에 안드신다면</span>
+        <span class="modaltext">답변에 마우스를 올리면 피드백을 하실 수 있습니다.</span>
+        <span class="modaltext">감사합니다.</span>
+      </div>
+    </div>
     <div class="hidebtn" v-show="!hideflag" @click="hideflag = !hideflag">
       <span>{{ button_title }}</span>
     </div>
     <div id="complayout" v-show="hideflag">
       <div class="headerlayout">
-        <div style="flex-basis: 30%;"></div>
+        <div style="flex-basis: 30%;" class="btns2" @click="getmodal">
+          <div class="btn">?</div>
+        </div>
         <span class="header" style="flex-basis: 30%;">{{ title }}</span>
         <div style="flex-basis: 30%;" class="btns">
           <div class="btn" @click="message_list=[]">C</div>
@@ -22,6 +32,9 @@
           <div class="arrow_box2 box_font" v-else>
             <span v-if="message.loadflag" class="loader"></span>
             <span v-else>{{ message.data }}</span>
+            <div v-if="!message.loadflag" @click="sendchat(message)" class="siren">
+              <font-awesome-icon icon="exclamation-circle" />
+            </div>
           </div>
         </div>
       </div>
@@ -89,10 +102,14 @@ export default {
         }
       }),
       loadflag: false,
-      loadidx: null
+      loadidx: null,
+      dialogue: false
     };
   },
   methods: {
+    async getmodal() {
+      this.dialogue = !this.dialogue;
+    },
     async get_result(message) {
       let result = null;
       await this.api
@@ -116,9 +133,13 @@ export default {
       if (this.loadflag) {
         return;
       }
-      document.getElementsByClassName("abutton")[0].textContent = await 'wait'
-      await document.getElementsByClassName("abutton")[0].classList.add("bbutton");
-      await document.getElementsByClassName("abutton")[0].classList.remove("abutton");
+      document.getElementsByClassName("abutton")[0].textContent = await "wait";
+      await document
+        .getElementsByClassName("abutton")[0]
+        .classList.add("bbutton");
+      await document
+        .getElementsByClassName("abutton")[0]
+        .classList.remove("abutton");
       this.loadflag = true;
       this.loadidx = this.message_list.length;
       let my_message = {
@@ -153,7 +174,7 @@ export default {
           type: "ai",
           data: res.data.result,
           loadflag: false,
-
+          targetidx: this.loadidx,
           idx: this.loadidx + 1
         };
       } else {
@@ -161,12 +182,13 @@ export default {
           type: "ai",
           data: "서버가 이상해요",
           loadflag: false,
+          targetidx: this.loadidx,
           idx: this.loadidx + 1
         };
       }
 
       this.message_list.splice(this.loadidx + 1, 1, ai_message);
-      document.getElementsByClassName("bbutton")[0].textContent = await 'send'
+      document.getElementsByClassName("bbutton")[0].textContent = await "send";
       document.getElementsByClassName("bbutton")[0].classList.add("abutton");
       document.getElementsByClassName("bbutton")[0].classList.remove("bbutton");
       this.loadflag = false;
@@ -184,10 +206,34 @@ export default {
         this.height.toString() + "px";
       document.getElementById("complayout").style.width =
         this.width.toString() + "px";
+    },
+    async sendchat(message) {
+      let que = await this.message_list[message.targetidx].data;
+      let ans = await this.message_list[message.idx].data;
+      await this.api
+        .request({
+          method: "POST",
+          url: `/`,
+          mode: "no-cors",
+          data: {}
+        })
+        .then(res => {
+          result = res;
+        })
+        .catch(function(error) {
+          result = error;
+        });
+      return result;
     }
   },
   mounted() {
     this.setCompSize();
+    window.onclick = event => {
+      if (event.target == document.getElementsByClassName("modal")[0]) {
+        console.log("clicked");
+        this.getmodal();
+      }
+    };
   }
 };
 </script>
@@ -195,6 +241,12 @@ export default {
 .btns {
   display: flex;
   justify-content: flex-end;
+  color: white;
+  font-weight: 500;
+}
+.btns2 {
+  display: flex;
+  justify-content: flex-start;
   color: white;
   font-weight: 500;
 }
@@ -406,7 +458,7 @@ export default {
   border-radius: 7px;
   word-break: break-all;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   margin: 0.5em 0;
 }
@@ -436,6 +488,14 @@ export default {
   border-width: 7px;
   margin-top: -7px;
 }
+.arrow_box2:hover .siren {
+  color: #dd9696;
+  cursor: pointer;
+}
+.siren {
+  color: #dfefff;
+}
+
 .loader,
 .loader:before,
 .loader:after {
@@ -493,5 +553,39 @@ export default {
   40% {
     box-shadow: 0 2.5em 0 0;
   }
+}
+</style>
+<style scoped>
+/* modal */
+.modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: black;
+  background-color: rgba(0, 0, 0, 0.562);
+  display: flex;
+}
+.modalcontent {
+  background-color: #fefefe;
+  margin: auto auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 50%;
+}
+
+.modaltitle {
+  display: block;
+  margin: 0 0 13px 0;
+  font-weight: 700;
+}
+.modaltext {
+  display: block;
+  color: rgb(70, 70, 70);
+  word-break: break-all;
+  margin-bottom: 7px;
 }
 </style>

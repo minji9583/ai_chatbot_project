@@ -32,7 +32,6 @@ time_stamp = 0
 
 # Req. 2-2-1 대답 예측 함수 구현
 def predict(text):
-    text = ' '.join(text.split('>')[1:])
     return pred.predict(text)
     
 # Req 2-2-2. app.db 를 연동하여 웹에서 주고받는 데이터를 DB로 저장
@@ -45,16 +44,38 @@ def app_mentioned(event_data):
     channel = event_data["event"]["channel"]
     text = event_data["event"]["text"]
     ts = float(event_data["event"]["ts"])
-    print(ts)
+    text = ' '.join(text.split('>')[1:])
+    if text[0] == " ":
+        text = text[1:]
     if ts > time_stamp:
         time_stamp = ts
-        print(text)
-        reply = predict(text)
-        print(reply)
-        slack_web_client.chat_postMessage(
-            channel=channel,
-            text=reply
-        )
+        if text == "신고":
+            insert(return_text)
+            reply = "신고 접수가 되었습니다. 감사합니다."
+            slack_web_client.chat_postMessage(
+                channel=channel,
+                text=reply
+            )
+        else:
+            return_text = text
+            print(text)
+            reply = predict(text) + '\n\n잘못된 답변이면 "신고"를 입력해주세요'
+            slack_web_client.chat_postMessage(
+                channel=channel,
+                text=reply
+            )
+
+def insert(text):
+    # app.db 파일을 연결
+    conn = sqlite3.connect('app.db')
+    # 사용할 수 있도록 설정(?)
+    c = conn.cursor()
+    # 쿼리문
+    c.execute('INSERT INTO search_history(query) VALUES(?)', (text,))
+    # 저장
+    conn.commit()
+    # app.db 파일 연결 해제
+    conn.close()
 
 @app.route("/", methods=["GET"])
 def index():

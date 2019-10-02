@@ -1,6 +1,6 @@
 import data
 import model as ml
-import predict_rain as pred
+import predict_min as pred
 import tensorflow as tf
 import sqlite3
 
@@ -16,8 +16,8 @@ from slack import WebClient
 from slackeventsapi import SlackEventAdapter
 
 # slack 연동 정보 입력 부분
-SLACK_TOKEN = os.getenv('SLACK_TOKEN')
-SLACK_SIGNING_SECRET = os.getenv('SLACK_SIGNING_SECRET')
+SLACK_TOKEN = 'xoxb-718907786578-720177174562-1qx9BjbVbLkrIB9yfikj8fVr'
+SLACK_SIGNING_SECRET = 'fa3d6193e36d26163abc90a4507ceec8'
 
 app = Flask(__name__)
 
@@ -33,8 +33,9 @@ time_stamp = 0
 # Req. 2-2-1 대답 예측 함수 구현
 def predict(text):
     text = ' '.join(text.split('>')[1:])
-    return pred.predict(text)
+    print('text', text, type(text))
 
+    return pred.predict(text)
 
 # Req 2-2-2. app.db 를 연동하여 웹에서 주고받는 데이터를 DB로 저장
 
@@ -44,40 +45,37 @@ def predict(text):
 def app_mentioned(event_data):
     global return_text, time_stamp
     channel = event_data["event"]["channel"]
+    print('channel', channel)
     text = event_data["event"]["text"]
-    print(event_data["event"])
     ts = float(event_data["event"]["ts"])
-    print(ts)
+    print('ts', ts)
     if ts > time_stamp:
         time_stamp = ts
-        print(text)
+        print('text', text)
         reply = predict(text)
-        print(reply)
+        print('reply', reply)
         slack_web_client.chat_postMessage(
             channel=channel,
             text=reply,
-            attachments=[{
-                "text": "잘못된 입력이면 아래의 '이상해요'버튼을 눌러주세요",
-                "fallback": "text insert db",
-                "callback_id": "save_text",
-                "color": "#3AA3E3",
-                "attachment_type": "default",
-                "actions": [
-                    {
-                        "name": "save_text",
-                        "text": "wrong",
-                        "type": "button",
-                        "value": 'abc',
-                        "data_source": "save_text"
-                    }]
-                 }]
+            attachments=
+            [
+                {
+                    "text" : "답변이 마음에 들지 않으면 `🚫 신고하기 🚫`를 눌러주세요.",
+                    "fallback": "마음에 들지 않는 답변에 대한 질문 수집",
+                    "callback_id": "report_msg",
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                    "actions": [
+                        {
+                            "name": "report",
+                            "text": "🚫 신고하기 🚫",
+                            "type": "button",
+                            "value": "report_message"
+                        }
+                    ]
+                }
+            ]
         )
-
-
-@slack_events_adaptor.on("button")
-def save_text(event_data):
-    print('save', event_data)
-    return
 
 @app.route("/", methods=["GET"])
 def index():
