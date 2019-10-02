@@ -40,6 +40,7 @@ def predict(text):
 # 챗봇이 멘션을 받았을 경우
 @slack_events_adaptor.on("app_mention")
 def app_mentioned(event_data):
+    print(event_data)
     global return_text, time_stamp
     channel = event_data["event"]["channel"]
     text = event_data["event"]["text"]
@@ -59,11 +60,40 @@ def app_mentioned(event_data):
         else:
             return_text = text
             print(text)
-            reply = predict(text) + '\n\n잘못된 답변이면 "신고"를 입력해주세요'
+            reply = predict(text)
             slack_web_client.chat_postMessage(
                 channel=channel,
-                text=reply
+                text=reply,
+                attachments=[
+                    {
+                        "text": "잘못된 답변이면 신고 버튼을 클릭해주세요",
+                        "fallback": "신고 버튼을 누르지 않았어요",
+                        "callback_id": "report_message",
+                        "color": "#3AA3E3",
+                        "attachment_type": "default",
+                        "actions": [
+                            {
+                                "name": "report",
+                                "text": "신고",
+                                "style": "danger",
+                                "type": "button",
+                                "value": "war",
+                                "confirm": {
+                                    "title": "신고 하시겠습니까?",
+                                    "text": "최선입니까? 확실해요?",
+                                    "ok_text": "네",
+                                    "dismiss_text": "아니오"
+                                }
+                            }
+                        ]
+                    }
+                ]
             )
+@slack_events_adaptor
+def app_mentioned(event_data):
+    print(event_data)
+
+
 
 def insert(text):
     # app.db 파일을 연결
