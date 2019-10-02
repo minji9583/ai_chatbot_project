@@ -1,10 +1,10 @@
 import data
 import model as ml
+import predict_rain as pred
 import tensorflow as tf
-import predict as pred
 import sqlite3
-import os
 
+import os
 import pickle
 import numpy as np
 
@@ -15,10 +15,9 @@ from flask import Flask
 from slack import WebClient
 from slackeventsapi import SlackEventAdapter
 
-
 # slack 연동 정보 입력 부분
-SLACK_TOKEN = os.environ['SLACK_TOKEN']
-SLACK_SIGNING_SECRET = os.environ['SLACK_SIGNING_SECRET']
+SLACK_TOKEN = os.getenv('SLACK_TOKEN')
+SLACK_SIGNING_SECRET = os.getenv('SLACK_SIGNING_SECRET')
 
 app = Flask(__name__)
 
@@ -27,30 +26,58 @@ slack_web_client = WebClient(token=SLACK_TOKEN)
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+return_text = ""
+time_stamp = 0
+
 
 # Req. 2-2-1 대답 예측 함수 구현
 def predict(text):
-    print('app predict text', text)
-    return pred.predict_answer(text)
+    text = ' '.join(text.split('>')[1:])
+    return pred.predict(text)
 
 
 # Req 2-2-2. app.db 를 연동하여 웹에서 주고받는 데이터를 DB로 저장
-    
+
 
 # 챗봇이 멘션을 받았을 경우
 @slack_events_adaptor.on("app_mention")
 def app_mentioned(event_data):
+    global return_text, time_stamp
     channel = event_data["event"]["channel"]
-    text = event_data["event"]["text"].split('>')[1]
+    text = event_data["event"]["text"]
+    print(event_data["event"])
+    ts = float(event_data["event"]["ts"])
+    print(ts)
+    if ts > time_stamp:
+        time_stamp = ts
+        print(text)
+        reply = predict(text)
+        print(reply)
+        slack_web_client.chat_postMessage(
+            channel=channel,
+            text=reply,
+            attachments=[{
+                "text": "잘못된 입력이면 아래의 '이상해요'버튼을 눌러주세요",
+                "fallback": "text insert db",
+                "callback_id": "save_text",
+                "color": "#3AA3E3",
+                "attachment_type": "default",
+                "actions": [
+                    {
+                        "name": "save_text",
+                        "text": "wrong",
+                        "type": "button",
+                        "value": 'abc',
+                        "data_source": "save_text"
+                    }]
+                 }]
+        )
 
-    keywords = predict(text)
-    slack_web_client.chat_postMessage(
-        channel=channel,
-        text=keywords
-    )
 
-
-
+@slack_events_adaptor.on("button")
+def save_text(event_data):
+    print('save', event_data)
+    return
 
 @app.route("/", methods=["GET"])
 def index():
