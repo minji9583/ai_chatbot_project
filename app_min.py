@@ -5,13 +5,15 @@ import tensorflow as tf
 import sqlite3
 
 import os
+import json
 import pickle
 import numpy as np
 
 from flask import g
 from threading import Thread
 from configs import DEFINES
-from flask import Flask
+from flask import Flask, request
+from flask_restful import reqparse
 from slack import WebClient
 from slackeventsapi import SlackEventAdapter
 
@@ -32,9 +34,6 @@ time_stamp = 0
 
 # Req. 2-2-1 대답 예측 함수 구현
 def predict(text):
-    text = ' '.join(text.split('>')[1:])
-    print('text', text, type(text))
-
     return pred.predict(text)
 
 # Req 2-2-2. app.db 를 연동하여 웹에서 주고받는 데이터를 DB로 저장
@@ -48,6 +47,7 @@ def app_mentioned(event_data):
     print('channel', channel)
     text = event_data["event"]["text"]
     ts = float(event_data["event"]["ts"])
+    text = ' '.join(text.split('>')[1:])
     print('ts', ts)
     if ts > time_stamp:
         time_stamp = ts
@@ -81,6 +81,15 @@ def app_mentioned(event_data):
 def index():
     return "<h1>Server is ready.</h1>"
 
+@app.route("/post", methods=["POST"])
+def post():
+    value = request.form['payload']
+
+    # print('request.form', value)
+    # print('request', request)
+    print('value.json_loads', json.loads(value))
+
+    return "접수완료"
 
 if __name__ == '__main__':
     app.run()
