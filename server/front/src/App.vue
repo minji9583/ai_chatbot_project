@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <abchat :base_url="'http://localhost:8000'"></abchat>
+    <abchat></abchat>
   </div>
 </template>
 
