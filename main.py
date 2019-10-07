@@ -14,7 +14,7 @@ DATA_OUT_PATH = './data_out/'
 
 # Req. 1-5-1. bleu score 계산 함수
 def bleu_compute(ture, val):
-    smooth = SmoothingFunction().method2
+    smooth = SmoothingFunction().method1
     score = sentence_bleu(
             [ture.split()],
             val.split(),
@@ -122,8 +122,9 @@ def main(self):
     answer = data.pred2string(predictions, idx2char)
 
     print(answer)
-    print("Bleu score: ", bleu_compute("그 사람도 그럴 거예요.", answer))
-    print("Rouge score: ", rouge_compute("그 사람도 그럴 거예요.", answer))
+    print("Bleu score: ", bleu_compute("그 사람도 그럴 거예요", answer))
+    print("Rouge score: ", rouge_compute("그 사람도 그럴 거예요", answer))
+    print('\ntest set 정확도: {accuracy:0.3f}\n'.format(**eval_result))
 
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.INFO)
