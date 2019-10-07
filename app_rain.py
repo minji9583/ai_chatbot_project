@@ -12,6 +12,8 @@ from flask import g
 from threading import Thread
 from configs import DEFINES
 from flask import Flask
+from flask import request
+import json
 from slack import WebClient
 from slackeventsapi import SlackEventAdapter
 
@@ -40,6 +42,7 @@ def predict(text):
 # 챗봇이 멘션을 받았을 경우
 @slack_events_adaptor.on("app_mention")
 def app_mentioned(event_data):
+    print(event_data)
     global return_text, time_stamp
     channel = event_data["event"]["channel"]
     text = event_data["event"]["text"]
@@ -49,21 +52,55 @@ def app_mentioned(event_data):
         text = text[1:]
     if ts > time_stamp:
         time_stamp = ts
-        if text == "신고":
-            insert(return_text)
-            reply = "신고 접수가 되었습니다. 감사합니다."
-            slack_web_client.chat_postMessage(
-                channel=channel,
-                text=reply
-            )
-        else:
-            return_text = text
-            print(text)
-            reply = predict(text) + '\n\n잘못된 답변이면 "신고"를 입력해주세요'
-            slack_web_client.chat_postMessage(
-                channel=channel,
-                text=reply
-            )
+        return_text = text
+        print(text)
+        reply = predict(text)
+        slack_web_client.chat_postMessage(
+            channel=channel,
+            text=reply,
+            attachments=[
+                {
+                    "text": "잘못된 답변이면 신고 버튼을 클릭해주세요",
+                    "fallback": "신고 버튼을 누르지 않았어요",
+                    "callback_id": "report_message",
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                    "actions": [
+                        {
+                            "name": "report",
+                            "text": "신고",
+                            "style": "danger",
+                            "type": "button",
+                            "value": text,
+                            "confirm": {
+                                "title": "신고 하시겠습니까?",
+                                "text": "최선입니까? 확실해요?",
+                                "ok_text": "네",
+                                "dismiss_text": "아니오"
+                            }
+                        }
+                    ]
+                }
+            ]
+        )
+
+def on_json_loading_failed_return_dict(e):
+    return {}
+
+
+@app.route("/post", methods=['POST'])
+def test():
+    print("안녕", request.form)
+    req = request.form['payload']
+    json_req = json.loads(req)
+    print("req", json_req)
+    # print("actions", json_req['actions'])
+    # print("value", json_req['actions'][0]['value'])
+    value = json_req['actions'][0]['value']
+    insert(value)
+    return "신고 접수가 되었습니다!"
+
+
 
 def insert(text):
     # app.db 파일을 연결

@@ -5,10 +5,11 @@ from konlpy.tag import Okt
 import numpy as np
 
 from flask import Flask
-from flask_restful import Resource, Api
+from flask_restful import Resource, Api, reqparse
 
 app = Flask(__name__)
 api = Api(app)
+parser = reqparse.RequestParser()
 
 with open('model.clf', 'rb') as f:
     model = pickle.load(f)
@@ -38,9 +39,7 @@ def preprocess(text):
     return np.array(X)
 
 def classify(text):
-    
     data = preprocess(text)
-
     result1 = naive.predict(data)[0]
     result2 = logi.predict(data)[0]
     result3 = knn.predict(data)[0]
@@ -55,6 +54,7 @@ class Data(Resource):
     def get(self, text):
         ans = classify(text)
         return {'result': ans}
+
 
 api.add_resource(Data, '/<string:text>')
 
