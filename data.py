@@ -33,7 +33,7 @@ def load_data():
     # 판다스를 통해서 데이터를 불러온다.
     data_df = pd.read_csv(DEFINES.data_path, header=0)
     # 질문과 답변 열을 가져와 question과 answer에 넣는다.
-    question, answer = list(data_df['Q'])[:50], list(data_df['A'])[:50]
+    question, answer = list(data_df['Q']), list(data_df['A'])
     # skleran에서 지원하는 함수를 통해서 학습 셋과
     # 테스트 셋을 나눈다.
     train_input, eval_input, train_label, eval_label = train_test_split(question, answer, test_size=0.33,
@@ -110,14 +110,13 @@ def dec_input_processing(value, dictionary):
     # 문장의 길이를 저장할 배열 초기화
     seq_len = []
     # 노이즈 캔슬
-    value = prepro_noise_canceling(value)
+    if DEFINES.tokenize_as_morph:
+        value = prepro_noise_canceling(value)
 
     for seq in value:
         # 디코딩 입력의 처음에는 START가 와야 하므로 STD 값 추가
         seq_index = [STD_INDEX]
-        if DEFINES.tokenize_as_morph:  # 형태소에 따른 토크나이져 처리
-            words = tokenizing_data(seq)
-        for word in words:
+        for word in seq.split():
             # print('get', dictionary.get(word))
             if dictionary.get(word) is not None:
                 seq_index.extend([dictionary.get(word)])
@@ -141,7 +140,7 @@ def dec_input_processing(value, dictionary):
         # 인덱스화 되어 있는 값은 seq_input_index에 추가
         seq_input_index.append(seq_index)
 
-    return np.asarray(seq_input_index), seq_len
+    return np.asarray(seq_input_index), np.asarray(seq_len)
 
 
 # Req 1-2-3. 디코더에 필요한 데이터 전 처리
