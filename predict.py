@@ -41,9 +41,6 @@ def predict(input_data):
     # 테스트용 데이터 만드는 부분이다.
     # 인코딩 부분 만든다.
     input = input_data
-    for i in sys.argv[1:]:
-        input += i
-        input += " "
 
     predic_input_enc, predic_input_enc_length = data.enc_processing([input], char2idx)
     # 학습 과정이 아니므로 디코딩 입력은
