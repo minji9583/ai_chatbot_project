@@ -1,6 +1,6 @@
 import data
 import model as ml
-import predict_rain as pred
+import predict as pred
 import tensorflow as tf
 import sqlite3
 
