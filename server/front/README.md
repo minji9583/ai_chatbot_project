@@ -8,11 +8,11 @@
 
 ## Intro
 
-**`vue-abchat`**은
+`vue-abchat`은
 
 인공지능 챗봇 서비스를 편하게 구현하기 위한 vue.js component 입니다.
 
-**`vue-abchat`**을 활용하면 ABC 보다 더 쉽게 챗봇을 서비스할 수 있습니다.
+`vue-abchat`을 활용하면 ABC 보다 더 쉽게 챗봇을 서비스할 수 있습니다.
 
 챗봇 서버에 Rest-api 요청으로 메세지를 보내면 응답 결과를 받아 chat 화면에 띄워줍니다.
 
@@ -46,7 +46,7 @@ npm install vue-abchat
 </template>
 <script>
 // get component from node_modules
-import abchat from '@/components/vue-abchat.vue'
+import abchat from 'vue-abchat.vue'
 export default {
   name: 'app',
   // add component
@@ -85,6 +85,8 @@ export default {
     })
 </script>
 ```
+
+> 현재 cdn 방식으로 설치할 경우 font-awesome 미적용으로 인해 신고를 할 수 없는 버그를 수정중입니다.
 
 
 
@@ -154,6 +156,18 @@ method : `GET`
   "result": "POS"
 }
 ```
+
+
+
+method: `POST` (신고 버튼 클릭시)
+
+요청방식 : `BASE_URL/db2`
+
+```json
+data : { "siren": {"result": `{question}`} }
+```
+
+
 
 
 
