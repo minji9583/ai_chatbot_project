@@ -115,7 +115,7 @@ export default {
       await this.api
         .request({
           method: "GET",
-          url: `/${message}`,
+          url: `/chat/${message}`,
           mode: "no-cors"
         })
         .then(res => {
@@ -210,27 +210,36 @@ export default {
     async sendchat(message) {
       let que = await this.message_list[message.targetidx].data;
       let ans = await this.message_list[message.idx].data;
+      let result = null
       await this.api
         .request({
           method: "POST",
-          url: `/`,
+          url: `/db2`,
           mode: "no-cors",
-          data: {}
+          data: {
+            "siren": {
+              "result": que
+            }
+          }
         })
         .then(res => {
-          result = res;
+          result = res.data;
         })
         .catch(function(error) {
           result = error;
         });
-      return result;
+      let ai_message = {
+          type: "ai",
+          data: result,
+          loadflag: false
+        };
+      this.message_list.push(ai_message)
     }
   },
   mounted() {
     this.setCompSize();
     window.onclick = event => {
       if (event.target == document.getElementsByClassName("modal")[0]) {
-        console.log("clicked");
         this.getmodal();
       }
     };

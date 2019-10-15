@@ -7,30 +7,29 @@ import numpy as np
 from flask import Flask, jsonify, make_response
 from flask_restful import Resource, Api, reqparse
 from flask_cors import CORS
-
-import predict_rain as pred
-
-
+​
+import predict as pred
+​
+​
 app = Flask(__name__)
 api = Api(app)
 parser = reqparse.RequestParser()
-
+​
 cors = CORS(app, resources={
   r"*": {"origin": "*"},
 })
-
-
-
-
+​
+​
+​
 class Data(Resource):
     def get(self, text):
-        ans = pred.predict(text)
-        return {"result": ans}
-
-
+        ans = pred.doPredict2(text)
+        res = str({"result":ans})
+        res = res.replace("\'", "\"")
+        return make_response(res)
+​
 parser.add_argument('payload')
-
-
+​
 class Db(Resource):
     def post(self):
         args = parser.parse_args().payload
@@ -39,9 +38,9 @@ class Db(Resource):
         with open('report.csv', 'a', encoding='utf-8') as f:
             f.write(text+',\n')
         return make_response('접수되었습니다.')
-
+​
 parser.add_argument('siren')
-
+​
 class Db2(Resource):
     def post(self):
         args = parser.parse_args().siren
@@ -51,12 +50,11 @@ class Db2(Resource):
         with open('report.csv', 'a', encoding='utf-8') as f:
             f.write(text+',\n')
         return make_response('접수되었습니다.')
-
-
+​
+​
 api.add_resource(Db, '/db')
 api.add_resource(Db2, '/db2')
 api.add_resource(Data, '/chat/<string:text>')
-
+​
 if __name__ == '__main__':
-    app.debug = True
-    app.run()
+    app.run(host="172.26.4.30",port=5000)

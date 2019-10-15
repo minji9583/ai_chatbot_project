@@ -1,6 +1,6 @@
 {
   "name": "vue-abchat",
-  "version": "0.2.7",
+  "version": "0.2.11",
   "description": "AI chat component for vue.js",
   "repository": {
     "type": "git",
@@ -17,9 +17,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
-    "build-bundle": "vue-cli-service build --target lib --name abchat ./src/index.js",
     "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/abchat.umd.js",
-    "build:es": "rollup --config build/rollup.config.js --format es --file dist/my-component.esm.js",
+    "build:es": "rollup --config build/rollup.config.js --format es --file dist/abchat.esm.js",
     "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/abchat.min.js"
   },
   "dependencies": {
